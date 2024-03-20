@@ -17,8 +17,8 @@ type HandlerResult = Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
 #[tokio::main]
 async fn main() {
-    let bot = Bot::new("7085983112:AAGpitXfAqPwvpu_czrP9kiMOUlg4iIwJoo");
     let worker = ParallelPageWorker::new("/Users/artemushakov/prog/tmp/singlefile".to_string());
+    let bot = Bot::from_env();
     Dispatcher::builder(bot, schema())
         .dependencies(dptree::deps![Arc::new(worker)])
         .build()
