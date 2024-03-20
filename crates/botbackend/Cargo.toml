@@ -10,5 +10,4 @@ doctest = false
 
 [dependencies]
 anyhow = { workspace = true }
-tempfile = { workspace = true }
 async-trait  = { workspace = true }

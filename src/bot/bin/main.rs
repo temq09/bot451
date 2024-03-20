@@ -8,10 +8,7 @@ use teloxide::types::InputFile;
 
 use botbackend::{PageData, PageResult, PageWorker};
 use botbackend::parallel_page_worker::ParallelPageWorker;
-
-use crate::command::Command;
-
-mod command;
+use proto::command::Command;
 
 type HandlerResult = Result<(), Box<dyn std::error::Error + Send + Sync>>;
 

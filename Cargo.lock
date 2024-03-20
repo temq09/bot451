@@ -93,6 +93,7 @@ dependencies = [
  "anyhow",
  "botbackend",
  "dptree",
+    "proto",
  "teloxide",
  "tokio",
 ]
@@ -103,7 +104,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "tempfile",
 ]
 
 [[package]]
@@ -841,6 +841,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e835ff2298f5721608eb1a980ecaee1aef2c132bf95ecc026a11b7bf3c01c02e"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "proto"
+version = "0.1.0"
+dependencies = [
+    "teloxide",
 ]
 
 [[package]]
