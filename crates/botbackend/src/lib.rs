@@ -1,10 +1,15 @@
-use std::fs::File;
+use std::path::Path;
+
 use async_trait::async_trait;
 
 pub mod parallel_page_worker;
 
 pub struct PageData {
     url: String,
+}
+
+pub enum PageResult {
+    FilePath(String),
 }
 
 impl PageData {
@@ -17,5 +22,5 @@ impl PageData {
 
 #[async_trait]
 pub trait PageWorker {
-    async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<File>;
+    async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<PageResult>;
 }
