@@ -5,18 +5,22 @@ use async_trait::async_trait;
 
 use crate::{PageData, PageResult, PageWorker};
 
-pub struct ParallelPageWorker {}
+pub struct ParallelPageWorker {
+    pub(crate) working_dir: String,
+}
 
 impl ParallelPageWorker {
-    pub fn new() -> Self {
-        return ParallelPageWorker {};
+    pub fn new(working_dir: String) -> Self {
+        ParallelPageWorker {
+            working_dir,
+        }
     }
 }
 
 #[async_trait]
 impl PageWorker for ParallelPageWorker {
     async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<PageResult> {
-        let mut file_path = PathBuf::from("/Users/artemushakov/prog/tmp/singlefile");
+        let mut file_path = PathBuf::from(self.working_dir.to_owned());
         file_path.push("page_name");
         file_path.set_extension("html");
         let path_str = file_path.to_str().unwrap().to_owned();
