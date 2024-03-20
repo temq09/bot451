@@ -7,10 +7,6 @@ edition = "2021"
 name = "bot"
 path = "src/bot/bin/main.rs"
 
-[[bin]]
-name = "page_generator"
-path = "src/page_generator/bin/main.rs"
-
 [workspace]
 members = [
     "crates/botbackend",
