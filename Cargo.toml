@@ -7,6 +7,10 @@ edition = "2021"
 name = "bot"
 path = "src/bot/bin/main.rs"
 
+[[bin]]
+name = "distributed_bot"
+path = "src/distributed_bot/bin/main.rs"
+
 [workspace]
 members = [
     "crates/botbackend",
