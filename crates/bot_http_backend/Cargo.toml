@@ -9,3 +9,6 @@ path = "src/lib.rs"
 doctest = false
 
 [dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+api = { path = "../api" }

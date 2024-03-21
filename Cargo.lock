@@ -27,8 +27,8 @@ checksum = "0952808a6c2afd1aa8947271f3a60f1a6763c7b912d210184c5149b5cf147247"
 name = "api"
 version = "0.1.0"
 dependencies = [
-    "anyhow",
-    "async-trait",
+ "anyhow",
+ "async-trait",
 ]
 
 [[package]]
@@ -99,10 +99,10 @@ name = "bot451"
 version = "0.1.0"
 dependencies = [
  "anyhow",
-    "api",
+ "api",
  "botbackend",
  "dptree",
-    "proto",
+ "proto",
  "teloxide",
  "tokio",
 ]
@@ -110,13 +110,18 @@ dependencies = [
 [[package]]
 name = "bot_http_backend"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "api",
+ "async-trait",
+]
 
 [[package]]
 name = "botbackend"
 version = "0.1.0"
 dependencies = [
  "anyhow",
-    "api",
+ "api",
  "async-trait",
 ]
 
@@ -861,7 +866,7 @@ dependencies = [
 name = "proto"
 version = "0.1.0"
 dependencies = [
-    "teloxide",
+ "teloxide",
 ]
 
 [[package]]
