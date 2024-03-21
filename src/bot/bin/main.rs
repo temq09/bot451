@@ -29,8 +29,16 @@ fn schema() -> UpdateHandler<Box<dyn std::error::Error + Send + Sync + 'static>>
         .branch(case![Command::GetPage { url }].endpoint(get_page))
 }
 
-async fn get_page(bot: Bot, url: String, message: Message, worker: Arc<ParallelPageWorker>) -> HandlerResult {
-    let page_result = worker.submit_page_generation(PageData::from_url(url)).await?;
+async fn get_page(bot: Bot,
+                  url: String,
+                  message: Message,
+                  worker: Arc<ParallelPageWorker>,
+) -> HandlerResult {
+    let page_data = PageData::from_url(
+        url,
+        message.chat.id.to_string(),
+    );
+    let page_result = worker.submit_page_generation(page_data).await?;
     send_document(message.chat.id.to_string(), &bot, page_result).await?;
     return Ok(());
 }

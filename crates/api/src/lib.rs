@@ -2,6 +2,7 @@ use async_trait::async_trait;
 
 pub struct PageData {
     pub url: String,
+    pub user_id: String,
 }
 
 pub enum PageResult {
@@ -10,9 +11,10 @@ pub enum PageResult {
 }
 
 impl PageData {
-    pub fn from_url(url: String) -> Self {
+    pub fn from_url(url: String, user_id: String) -> Self {
         PageData {
-            url
+            url,
+            user_id,
         }
     }
 }
