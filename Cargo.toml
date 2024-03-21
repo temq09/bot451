@@ -7,13 +7,12 @@ edition = "2021"
 name = "bot"
 path = "src/bot/bin/main.rs"
 
-[[bin]]
-name = "page_generator"
-path = "src/page_generator/bin/main.rs"
-
 [workspace]
 members = [
+    "crates/api",
+    "crates/bot_http_backend",
     "crates/botbackend",
+    "crates/proto",
 ]
 
 [workspace.dependencies]
@@ -23,6 +22,8 @@ anyhow = { version = "1.0" }
 tempfile = "3"
 async-trait = "0.1.78"
 dptree = "0.3.0"
+reqwest = { version = "0.12.0", features = ["json"] }
+serde_json = "1.0.114"
 
 [dependencies]
 tokio.workspace = true
@@ -30,3 +31,5 @@ teloxide.workspace = true
 anyhow.workspace = true
 dptree.workspace = true
 botbackend = { path = "crates/botbackend" }
+proto = { path = "crates/proto" }
+api = { path = "crates/api" }

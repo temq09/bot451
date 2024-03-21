@@ -1,14 +1,13 @@
 [package]
-name = "botbackend"
+name = "api"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "botbackend"
+name = "api"
 path = "src/lib.rs"
 doctest = false
 
 [dependencies]
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-api = { path = "../api" }

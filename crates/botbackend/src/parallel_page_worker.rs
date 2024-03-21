@@ -3,7 +3,7 @@ use std::process::Command;
 
 use async_trait::async_trait;
 
-use crate::{PageData, PageResult, PageWorker};
+use api::{PageData, PageResult, PageWorker};
 
 pub struct ParallelPageWorker {
     pub(crate) working_dir: String,
@@ -24,7 +24,6 @@ impl PageWorker for ParallelPageWorker {
         file_path.push("page_name");
         file_path.set_extension("html");
         let path_str = file_path.to_str().unwrap().to_owned();
-        println!("Html page path: {}", path_str);
         let result = PageResult::FilePath(path_str.to_owned());
         let output = Command::new("/Users/artemushakov/prog/tmp/singlefile/singlefile")
             .arg(page_data.url)
