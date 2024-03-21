@@ -6,7 +6,7 @@ use teloxide::{prelude::*, utils::command::BotCommands};
 use teloxide::dispatching::UpdateHandler;
 use teloxide::types::InputFile;
 
-use botbackend::{PageData, PageResult, PageWorker};
+use api::{PageData, PageResult, PageWorker};
 use botbackend::parallel_page_worker::ParallelPageWorker;
 use proto::command::Command;
 
@@ -36,12 +36,17 @@ async fn get_page(bot: Bot, url: String, message: Message, worker: Arc<ParallelP
 }
 
 async fn send_document(chat_id: String, bot: &Bot, result: PageResult) -> anyhow::Result<()> {
-    bot.send_document(chat_id, result_to_input_file(result)).await?;
+    if let Some(document) = result_to_input_file(result) {
+        bot.send_document(chat_id, document).await?;
+    }
     return Ok(());
 }
 
-fn result_to_input_file(result: PageResult) -> InputFile {
-    match result { PageResult::FilePath(path) => InputFile::file(PathBuf::from(path)) }
+fn result_to_input_file(result: PageResult) -> Option<InputFile> {
+    match result {
+        PageResult::FilePath(path) => Some(InputFile::file(PathBuf::from(path))),
+        PageResult::Noop => None
+    }
 }
 
 async fn print_help(bot: Bot, message: Message) -> HandlerResult {

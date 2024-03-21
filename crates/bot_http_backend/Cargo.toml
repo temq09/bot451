@@ -1,0 +1,11 @@
+[package]
+name = "bot_http_backend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "bot_http_backend"
+path = "src/lib.rs"
+doctest = false
+
+[dependencies]

@@ -24,6 +24,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0952808a6c2afd1aa8947271f3a60f1a6763c7b912d210184c5149b5cf147247"
 
 [[package]]
+name = "api"
+version = "0.1.0"
+dependencies = [
+    "anyhow",
+    "async-trait",
+]
+
+[[package]]
 name = "aquamarine"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -91,6 +99,7 @@ name = "bot451"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+    "api",
  "botbackend",
  "dptree",
     "proto",
@@ -99,10 +108,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bot_http_backend"
+version = "0.1.0"
+
+[[package]]
 name = "botbackend"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+    "api",
  "async-trait",
 ]
 

@@ -7,13 +7,12 @@ edition = "2021"
 name = "bot"
 path = "src/bot/bin/main.rs"
 
-[[bin]]
-name = "distributed_bot"
-path = "src/distributed_bot/bin/main.rs"
-
 [workspace]
 members = [
-    "crates/botbackend", "crates/proto",
+    "crates/api",
+    "crates/bot_http_backend",
+    "crates/botbackend",
+    "crates/proto",
 ]
 
 [workspace.dependencies]
@@ -31,3 +30,4 @@ anyhow.workspace = true
 dptree.workspace = true
 botbackend = { path = "crates/botbackend" }
 proto = { path = "crates/proto" }
+api = { path = "crates/api" }
