@@ -16,7 +16,7 @@ members = [
     "crates/api",
     "crates/bot_http_backend",
     "crates/botbackend",
-    "crates/proto",
+    "crates/proto", "crates/rest_backend",
 ]
 
 [workspace.dependencies]
