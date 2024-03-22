@@ -16,7 +16,8 @@ members = [
     "crates/api",
     "crates/bot_http_backend",
     "crates/botbackend",
-    "crates/proto", "crates/rest_backend",
+    "crates/proto",
+    "crates/rest_backend",
 ]
 
 [workspace.dependencies]
@@ -36,5 +37,6 @@ teloxide.workspace = true
 anyhow.workspace = true
 dptree.workspace = true
 botbackend = { path = "crates/botbackend" }
+rest_backend = { path = "crates/rest_backend" }
 proto = { path = "crates/proto" }
 api = { path = "crates/api" }
