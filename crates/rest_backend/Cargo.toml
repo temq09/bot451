@@ -1,0 +1,9 @@
+[package]
+name = "rest_backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
