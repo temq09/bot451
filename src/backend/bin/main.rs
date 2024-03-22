@@ -1,7 +1,7 @@
 use rest_backend::{init, RestBackend};
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let config = RestBackend::new(8080);
-    init(config).await.expect("Server failed");
+    init(config).await
 }
