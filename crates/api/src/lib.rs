@@ -12,14 +12,11 @@ pub enum PageResult {
 
 impl PageData {
     pub fn from_url(url: String, user_id: String) -> Self {
-        PageData {
-            url,
-            user_id,
-        }
+        PageData { url, user_id }
     }
 }
 
 #[async_trait]
-pub trait PageWorker {
+pub trait PageWorker: Sync + Send {
     async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<PageResult>;
 }
