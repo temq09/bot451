@@ -3,27 +3,29 @@ use std::sync::Arc;
 
 use anyhow::anyhow;
 use axum::extract::State;
-use axum::response::IntoResponse;
 use axum::routing::post;
 use axum::{Json, Router};
 use tokio::net::TcpListener;
 
-use api::{PageData, PageWorker};
+use api::PageWorker;
 
 use crate::error::AppError;
+use crate::load_page_handler::LoadPageHandler;
 
 mod error;
+mod load_page_handler;
 
 pub struct RestBackend {
     port: u16,
-    page_loader: Arc<dyn PageWorker>,
+    page_loader: Arc<LoadPageHandler>,
 }
 
 impl RestBackend {
     pub fn new(port: u16, page_loader: impl PageWorker + 'static) -> Self {
+        let handler = LoadPageHandler::new(Box::new(page_loader));
         RestBackend {
             port,
-            page_loader: Arc::new(page_loader),
+            page_loader: Arc::new(handler),
         }
     }
 }
@@ -46,7 +48,7 @@ async fn create_listener(port: u16) -> anyhow::Result<TcpListener> {
 }
 
 async fn load_page(
-    State(page_loader): State<Arc<dyn PageWorker>>,
+    State(page_loader): State<Arc<LoadPageHandler>>,
     Json(payload): Json<serde_json::Value>,
 ) -> Result<(), AppError> {
     println!("Load page request for {}", payload);
@@ -59,9 +61,9 @@ async fn load_page(
         .ok_or(AppError::BadRequest("User id is not set".to_string()))?
         .to_owned();
 
-    page_loader
-        .submit_page_generation(PageData::from_url(page_url, user_id))
-        .await?;
+    tokio::spawn(async move {
+        let _ = page_loader.load_page_for_user(page_url, user_id).await;
+    });
 
     return Ok(());
 }
