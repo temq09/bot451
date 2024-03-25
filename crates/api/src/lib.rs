@@ -25,3 +25,16 @@ pub trait PageWorker: Sync + Send {
 pub trait PageUploader: Sync + Send {
     async fn send_page(&self, chat_id: String, page_result: PageResult) -> anyhow::Result<()>;
 }
+
+pub struct PageInfo {
+    telegram_file_id: String,
+    file_hash: String,
+    page_url: String,
+    timestamp_ms: u128,
+}
+
+#[async_trait]
+pub trait PagePersistent {
+    async fn save(&self, page_info: &PageInfo) -> anyhow::Result<()>;
+    async fn get(&self, page_url: &str) -> anyhow::Result<Option<PageInfo>>;
+}
