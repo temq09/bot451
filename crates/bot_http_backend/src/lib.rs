@@ -1,5 +1,5 @@
 use reqwest::Client;
-use serde::Serialize;
+use serde_json::json;
 
 use api::{PageData, PageResult, PageWorker};
 
@@ -19,25 +19,15 @@ impl HttpBotBackendParams {
 
 impl PageWorker for HttpBotBackendParams {
     async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<PageResult> {
-        self.client.post(&self.backend_endpoint)
-            .json(&SubmitPageForUserBody::from_page_data(&page_data))
+        let body = json!({
+            "page_url": page_data.url,
+            "user_id": page_data.user_id
+        });
+        self.client
+            .post(&self.backend_endpoint)
+            .json(&body)
             .send()
             .await?;
         return Ok(PageResult::Noop);
-    }
-}
-
-#[derive(Debug, Serialize)]
-struct SubmitPageForUserBody {
-    page_url: String,
-    user_id: String,
-}
-
-impl SubmitPageForUserBody {
-    fn from_page_data(page_data: &PageData) -> Self {
-        SubmitPageForUserBody {
-            page_url: page_data.url.to_owned(),
-            user_id: page_data.user_id.to_owned(),
-        }
     }
 }
