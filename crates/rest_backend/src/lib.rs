@@ -7,7 +7,7 @@ use axum::routing::post;
 use axum::{Json, Router};
 use tokio::net::TcpListener;
 
-use api::PageWorker;
+use api::{PageUploader, PageWorker};
 
 use crate::error::AppError;
 use crate::load_page_handler::LoadPageHandler;
@@ -21,8 +21,12 @@ pub struct RestBackend {
 }
 
 impl RestBackend {
-    pub fn new(port: u16, page_loader: impl PageWorker + 'static) -> Self {
-        let handler = LoadPageHandler::new(Box::new(page_loader));
+    pub fn new(
+        port: u16,
+        page_loader: impl PageWorker + 'static,
+        page_uploader: impl PageUploader + 'static,
+    ) -> Self {
+        let handler = LoadPageHandler::new(Box::new(page_loader), Box::new(page_uploader));
         RestBackend {
             port,
             page_loader: Arc::new(handler),

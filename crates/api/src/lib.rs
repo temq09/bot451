@@ -20,3 +20,8 @@ impl PageData {
 pub trait PageWorker: Sync + Send {
     async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<PageResult>;
 }
+
+#[async_trait]
+pub trait PageUploader: Sync + Send {
+    async fn send_page(&self, chat_id: String, page_result: PageResult) -> anyhow::Result<()>;
+}
