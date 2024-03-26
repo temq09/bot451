@@ -155,7 +155,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "api",
-    "async-trait",
+ "async-trait",
  "botbackend",
  "dptree",
  "proto",
@@ -1357,6 +1357,13 @@ checksum = "05ffd9c0a93b7543e062e759284fcf5f5e3b098501104bfbdde4d404db792871"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "sqlite"
+version = "0.1.0"
+dependencies = [
+ "api",
 ]
 
 [[package]]
