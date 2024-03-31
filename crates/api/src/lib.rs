@@ -27,10 +27,10 @@ pub trait PageUploader: Sync + Send {
 }
 
 pub struct PageInfo {
-    telegram_file_id: String,
-    file_hash: String,
-    page_url: String,
-    timestamp_ms: u128,
+    pub telegram_file_id: String,
+    pub file_hash: String,
+    pub page_url: String,
+    pub timestamp_ms: u128,
 }
 
 #[async_trait]
