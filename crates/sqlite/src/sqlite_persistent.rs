@@ -1,87 +1,85 @@
-use rusqlite::{Connection, Row};
+use anyhow::bail;
+use async_trait::async_trait;
+use sqlx::sqlite::SqliteRow;
+use sqlx::{Pool, Row, Sqlite, SqlitePool};
 
 use api::{PageInfo, PagePersistent};
 
 pub struct SqlitePagePersistent {
-    connection: Connection,
+    connection: Pool<Sqlite>,
 }
 
-fn init_db(path: String) -> anyhow::Result<SqlitePagePersistent> {
-    let connection = Connection::open(path)?;
-    create_table_if_exist(&connection)?;
-    Ok(SqlitePagePersistent { connection })
+pub async fn init_db(path: String) -> anyhow::Result<SqlitePagePersistent> {
+    let pool = SqlitePool::connect(&path).await?;
+    create_table_if_exist(&pool).await?;
+    Ok(SqlitePagePersistent { connection: pool })
 }
 
-const COLUMN_ID: &str = "id";
-const COLUMN_PAGE_URL: &str = "page_url";
-const COLUMN_FILE_HASH: &str = "file_hash";
-const COLUMN_ID_TIMESTAMP: &str = "timestamp";
-const COLUMN_TELEGRAM_FILE_ID: &str = "telegram_file_id";
-const CREATE_TABLE_QUERY: &str = format!(
-    "CREATE TABLE IF NOT EXISTS telegram_documents (
-            {COLUMN_ID} INTEGER PRIMARY KEY,
-            {COLUMN_PAGE_URL} TEXT NOT NULL
-            {COLUMN_FILE_HASH} TEXT NOT NULL
-            {COLUMN_ID_TIMESTAMP} INTEGER NOT NULL
-            {COLUMN_TELEGRAM_FILE_ID} TEXT NOT NULL
-        )"
-);
+const CREATE_TABLE_QUERY: &str = r#"
+    CREATE TABLE IF NOT EXISTS telegram_documents (
+            id INTEGER PRIMARY KEY,
+            page_url TEXT NOT NULL,
+            file_hash TEXT NOT NULL,
+            timestamp INTEGER NOT NULL,
+            telegram_file_id TEXT NOT NULL)
+    "#;
 
-const INSERT_QUERY: &str = format!(
-    "INSERT INTO telegram_documents \
-    ({COLUMN_PAGE_URL}, {COLUMN_FILE_HASH}, {COLUMN_ID_TIMESTAMP}, {COLUMN_TELEGRAM_FILE_ID}) \
-    VALUES (:{COLUMN_PAGE_URL}), (:{COLUMN_FILE_HASH}), (:{COLUMN_ID_TIMESTAMP}), {COLUMN_TELEGRAM_FILE_ID}"
-);
+const INSERT_QUERY: &str = r#"
+    INSERT INTO telegram_documents (page_url, file_hash, timestamp, telegram_file_id)
+    VALUES ($1, $2, $3, $4)
+    "#;
 
-fn create_table_if_exist(connection: &Connection) -> anyhow::Result<()> {
-    connection.execute(CREATE_TABLE_QUERY, ())?;
-    return Ok(());
+async fn create_table_if_exist(connection: &Pool<Sqlite>) -> anyhow::Result<()> {
+    sqlx::query(CREATE_TABLE_QUERY).execute(connection).await?;
+    Ok(())
 }
 
+#[async_trait]
 impl PagePersistent for SqlitePagePersistent {
     async fn save(&self, page_info: &PageInfo) -> anyhow::Result<()> {
-        self.connection.execute(
-            INSERT_QUERY,
-            &[
-                (format!(":{}", COLUMN_PAGE_URL), page_info.page_url.as_str()),
-                (
-                    format!(":{}", COLUMN_FILE_HASH),
-                    page_info.file_hash.as_str(),
-                ),
-                (
-                    format!(":{}", COLUMN_ID_TIMESTAMP),
-                    page_info.timestamp_ms.to_string().as_str(),
-                ),
-                (
-                    format!(":{}", COLUMN_TELEGRAM_FILE_ID),
-                    page_info.telegram_file_id.as_str(),
-                ),
-            ],
-        )?;
+        let count = sqlx::query(INSERT_QUERY)
+            .bind(&page_info.page_url)
+            .bind(&page_info.file_hash)
+            .bind(page_info.timestamp_ms.to_string().as_str())
+            .bind(&page_info.telegram_file_id)
+            .execute(&self.connection)
+            .await?
+            .rows_affected();
 
-        return Ok(());
+        return if count == 1 {
+            Ok(())
+        } else {
+            bail!("Expected one row to be inserted, but was {}", count)
+        };
     }
 
     async fn get(&self, page_url: &str) -> anyhow::Result<Option<PageInfo>> {
-        Ok(self
-            .connection
-            .query_row(
-                "SELECT * FROM telegram_documents WHERE page_url",
-                [page_url],
-                |row| map_row(row),
-            )
-            .map(|page_info| Some(page_info))
-            .map_err(|err| None)?)
+        let result = sqlx::query(
+            r#"
+            SELECT * FROM telegram_documents
+            WHERE page_url = $1
+            "#,
+        )
+        .bind(page_url)
+        .fetch_optional(&self.connection)
+        .await?;
+
+        return match result {
+            None => Ok(None),
+            Some(row) => map_row(row),
+        };
     }
 }
 
-fn map_row(row: &Row) -> rusqlite::Result<PageInfo> {
-    Ok(PageInfo {
-        page_url: row.get(1)?,
-        file_hash: row.get(2)?,
-        timestamp_ms: row.get(3).map(|timestamp| u128::from(timestamp))?,
-        telegram_file_id: row.get(4)?,
-    })
+fn map_row(row: SqliteRow) -> anyhow::Result<Option<PageInfo>> {
+    let page_info = PageInfo {
+        page_url: row.try_get(1)?,
+        file_hash: row.try_get(2)?,
+        timestamp_ms: row.try_get::<i64, usize>(3)? as u128,
+        telegram_file_id: row.try_get(4)?,
+    };
+
+    return Ok(Some(page_info));
 }
 
 #[cfg(test)]
@@ -90,9 +88,9 @@ mod test {
 
     use crate::sqlite_persistent::init_db;
 
-    #[tokio::test]
+    #[sqlx::test]
     async fn test_save_and_get_record() -> anyhow::Result<()> {
-        let db = init_db(":memory".to_string())?;
+        let db = init_db("sqlite::memory:".to_string()).await?;
         let page_info = PageInfo {
             telegram_file_id: "telegram_file_id".to_string(),
             file_hash: "file_hash".to_string(),

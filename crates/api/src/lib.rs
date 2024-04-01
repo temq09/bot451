@@ -26,6 +26,7 @@ pub trait PageUploader: Sync + Send {
     async fn send_page(&self, chat_id: String, page_result: PageResult) -> anyhow::Result<()>;
 }
 
+#[derive(Debug, PartialEq)]
 pub struct PageInfo {
     pub telegram_file_id: String,
     pub file_hash: String,
