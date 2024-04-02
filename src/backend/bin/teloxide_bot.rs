@@ -31,5 +31,6 @@ fn to_input_file(page_result: PageResult) -> Option<InputFile> {
     match page_result {
         PageResult::FilePath(path) => Some(InputFile::file(path)),
         PageResult::Noop => None,
+        PageResult::TelegramId(id) => Some(InputFile::file_id(id)),
     }
 }

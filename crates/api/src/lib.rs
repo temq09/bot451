@@ -7,6 +7,7 @@ pub struct PageData {
 
 pub enum PageResult {
     FilePath(String),
+    TelegramId(String),
     Noop,
 }
 
@@ -35,7 +36,7 @@ pub struct PageInfo {
 }
 
 #[async_trait]
-pub trait PagePersistent {
+pub trait PagePersistent: Sync + Send {
     async fn save(&self, page_info: &PageInfo) -> anyhow::Result<()>;
     async fn get(&self, page_url: &str) -> anyhow::Result<Option<PageInfo>>;
 }
