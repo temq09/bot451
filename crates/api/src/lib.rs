@@ -5,6 +5,7 @@ pub struct PageData {
     pub user_id: String,
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub enum PageResult {
     FilePath(String),
     TelegramId(String),
@@ -31,7 +32,7 @@ pub trait PageUploader: Sync + Send {
     ) -> anyhow::Result<Option<String>>;
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct PageInfo {
     pub telegram_file_id: String,
     pub file_hash: String,
