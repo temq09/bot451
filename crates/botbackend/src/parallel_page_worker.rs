@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use async_trait::async_trait;
+use nanoid::nanoid;
 
 use api::{PageData, PageResult, PageWorker};
 
@@ -11,9 +12,7 @@ pub struct ParallelPageWorker {
 
 impl ParallelPageWorker {
     pub fn new(working_dir: String) -> Self {
-        ParallelPageWorker {
-            working_dir,
-        }
+        ParallelPageWorker { working_dir }
     }
 }
 
@@ -21,7 +20,7 @@ impl ParallelPageWorker {
 impl PageWorker for ParallelPageWorker {
     async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<PageResult> {
         let mut file_path = PathBuf::from(self.working_dir.to_owned());
-        file_path.push("page_name");
+        file_path.push(nanoid!());
         file_path.set_extension("html");
         let path_str = file_path.to_str().unwrap().to_owned();
         let result = PageResult::FilePath(path_str.to_owned());

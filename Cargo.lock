@@ -212,7 +212,7 @@ dependencies = [
  "dptree",
  "proto",
  "rest_backend",
-    "sqlite",
+ "sqlite",
  "teloxide",
  "tokio",
 ]
@@ -235,6 +235,7 @@ dependencies = [
  "anyhow",
  "api",
  "async-trait",
+ "nanoid",
 ]
 
 [[package]]
@@ -1131,6 +1132,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "nanoid"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ffa00dec017b5b1a8b7cf5e2c008bfda1aa7e0697ac1508b491fdf2622fb4d8"
+dependencies = [
+ "rand",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1492,7 +1502,7 @@ version = "0.11.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78bf93c4af7a8bb7d879d51cebe797356ff10ae8516ace542b5182d9dcac10b2"
 dependencies = [
-    "base64 0.21.7",
+ "base64 0.21.7",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -1535,7 +1545,7 @@ version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "58b48d98d932f4ee75e541614d32a7f44c889b72bd9c2e04d95edd135989df88"
 dependencies = [
-    "base64 0.21.7",
+ "base64 0.21.7",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -1578,10 +1588,10 @@ dependencies = [
  "anyhow",
  "api",
  "axum",
-    "base64 0.22.0",
+ "base64 0.22.0",
  "serde_json",
-    "sha2",
-    "tempfile",
+ "sha2",
+ "tempfile",
  "tokio",
 ]
 
@@ -1639,7 +1649,7 @@ version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c74cae0a4cf6ccbbf5f359f08efdf8ee7e1dc532573bf0db71968cb56b1448c"
 dependencies = [
-    "base64 0.21.7",
+ "base64 0.21.7",
 ]
 
 [[package]]
@@ -1972,7 +1982,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ed31390216d20e538e447a7a9b959e06ed9fc51c37b514b46eb758016ecd418"
 dependencies = [
  "atoi",
-    "base64 0.21.7",
+ "base64 0.21.7",
  "bitflags 2.4.2",
  "byteorder",
  "bytes",
@@ -2014,7 +2024,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c824eb80b894f926f89a0b9da0c7f435d27cdd35b8c655b114e58223918577e"
 dependencies = [
  "atoi",
-    "base64 0.21.7",
+ "base64 0.21.7",
  "bitflags 2.4.2",
  "byteorder",
  "crc",
