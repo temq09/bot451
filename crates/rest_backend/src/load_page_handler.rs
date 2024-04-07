@@ -1,4 +1,5 @@
 use std::io::Read;
+use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use base64::prelude::BASE64_STANDARD;
@@ -10,14 +11,14 @@ use api::{PageData, PageInfo, PagePersistent, PageResult, PageUploader, PageWork
 pub struct LoadPageHandler {
     page_loader: Box<dyn PageWorker>,
     page_uploader: Box<dyn PageUploader>,
-    cache: Box<dyn PagePersistent>,
+    cache: Arc<dyn PagePersistent>,
 }
 
 impl LoadPageHandler {
     pub(crate) fn new(
         loader: Box<dyn PageWorker>,
         page_uploader: Box<dyn PageUploader>,
-        cache: Box<dyn PagePersistent>,
+        cache: Arc<impl PagePersistent + 'static>,
     ) -> Self {
         LoadPageHandler {
             page_loader: loader,
@@ -46,7 +47,7 @@ impl LoadPageHandler {
 async fn save_to_cache(
     file_id: &str,
     result: &PageResult,
-    cache: &Box<dyn PagePersistent>,
+    cache: &Arc<dyn PagePersistent>,
     page_url: String,
 ) {
     let page_info = prepare_page_info(&result).map(|hash| PageInfo {

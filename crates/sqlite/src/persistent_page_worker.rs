@@ -1,14 +1,19 @@
+use std::sync::Arc;
+
 use async_trait::async_trait;
 
 use api::{PageData, PagePersistent, PageResult, PageWorker};
 
-struct PersistentPageWorker {
-    pub(crate) storage: Box<dyn PagePersistent>,
+pub struct PersistentPageWorker {
+    pub(crate) storage: Arc<dyn PagePersistent>,
     pub(crate) fallback_worker: Box<dyn PageWorker>,
 }
 
 impl PersistentPageWorker {
-    fn new(storage: Box<dyn PagePersistent>, fallback_worker: Box<dyn PageWorker>) -> Self {
+    pub fn new(
+        storage: Arc<impl PagePersistent + 'static>,
+        fallback_worker: Box<dyn PageWorker>,
+    ) -> Self {
         PersistentPageWorker {
             storage,
             fallback_worker,

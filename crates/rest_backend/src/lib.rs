@@ -25,12 +25,12 @@ impl RestBackend {
         port: u16,
         page_loader: impl PageWorker + 'static,
         page_uploader: impl PageUploader + 'static,
-        page_persistent: impl PagePersistent + 'static,
+        page_persistent: Arc<impl PagePersistent + 'static>,
     ) -> Self {
         let handler = LoadPageHandler::new(
             Box::new(page_loader),
             Box::new(page_uploader),
-            Box::new(page_persistent),
+            page_persistent,
         );
         RestBackend {
             port,
