@@ -11,4 +11,5 @@ doctest = false
 [dependencies]
 anyhow = { workspace = true }
 async-trait = { workspace = true }
+nanoid = { workspace = true }
 api = { path = "../api" }

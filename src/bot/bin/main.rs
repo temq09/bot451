@@ -53,6 +53,7 @@ async fn send_document(chat_id: String, bot: &Bot, result: PageResult) -> anyhow
 fn result_to_input_file(result: PageResult) -> Option<InputFile> {
     match result {
         PageResult::FilePath(path) => Some(InputFile::file(PathBuf::from(path))),
+        PageResult::TelegramId(id) => Some(InputFile::file_id(id)),
         PageResult::Noop => None,
     }
 }
