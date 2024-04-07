@@ -22,7 +22,7 @@ impl PageUploader for TeloxidePageUploader {
     async fn send_page(
         &self,
         chat_id: String,
-        page_result: PageResult,
+        page_result: &PageResult,
     ) -> anyhow::Result<Option<String>> {
         let result = match to_input_file(page_result) {
             None => None,
@@ -31,13 +31,13 @@ impl PageUploader for TeloxidePageUploader {
                 .send_document(chat_id, input_file)
                 .await?
                 .document()
-                .map(|document| document.file.id),
+                .map(|document| document.file.id.to_string()),
         };
         return Ok(result);
     }
 }
 
-fn to_input_file(page_result: PageResult) -> Option<InputFile> {
+fn to_input_file(page_result: &PageResult) -> Option<InputFile> {
     match page_result {
         PageResult::FilePath(path) => Some(InputFile::file(path)),
         PageResult::Noop => None,

@@ -15,6 +15,10 @@ pub async fn init_db(path: String) -> anyhow::Result<SqlitePagePersistent> {
     Ok(SqlitePagePersistent { connection: pool })
 }
 
+pub async fn in_memory_db() -> anyhow::Result<SqlitePagePersistent> {
+    init_db("sqlite::memory:".to_string()).await
+}
+
 const CREATE_TABLE_QUERY: &str = r#"
     CREATE TABLE IF NOT EXISTS telegram_documents (
             id INTEGER PRIMARY KEY,

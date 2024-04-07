@@ -28,7 +28,7 @@ pub trait PageUploader: Sync + Send {
     async fn send_page(
         &self,
         chat_id: String,
-        page_result: PageResult,
+        page_result: &PageResult,
     ) -> anyhow::Result<Option<String>>;
 }
 

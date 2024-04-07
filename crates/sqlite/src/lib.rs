@@ -1,2 +1,2 @@
 mod persistent_page_worker;
-mod sqlite_persistent;
+pub mod sqlite_persistent;
