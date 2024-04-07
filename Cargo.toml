@@ -25,7 +25,6 @@ members = [
 tokio = { version = "1.29.1", features = ["full"] }
 teloxide = { version = "0.12", features = ["macros"] }
 anyhow = { version = "1.0" }
-tempfile = "3"
 async-trait = "0.1.78"
 dptree = "0.3.0"
 reqwest = { version = "0.12.0", features = ["json"] }
