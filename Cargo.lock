@@ -256,6 +256,7 @@ dependencies = [
  "anyhow",
  "api",
  "async-trait",
+ "bot_http_backend",
  "botbackend",
  "clap",
  "dptree",

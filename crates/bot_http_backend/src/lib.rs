@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use reqwest::Client;
 use serde_json::json;
 
@@ -17,6 +18,7 @@ impl HttpBotBackendParams {
     }
 }
 
+#[async_trait]
 impl PageWorker for HttpBotBackendParams {
     async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<PageResult> {
         let body = json!({

@@ -44,6 +44,7 @@ dptree.workspace = true
 async-trait.workspace = true
 clap.workspace = true
 botbackend = { path = "crates/botbackend" }
+bot_http_backend = { path = "crates/bot_http_backend" }
 rest_backend = { path = "crates/rest_backend" }
 proto = { path = "crates/proto" }
 api = { path = "crates/api" }
