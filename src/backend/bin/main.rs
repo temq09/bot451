@@ -1,17 +1,22 @@
 use std::sync::Arc;
 
+use clap::Parser;
+
 use api::{PagePersistent, PageUploader, PageWorker};
 use botbackend::parallel_page_worker::ParallelPageWorker;
 use rest_backend::{init, RestBackend};
 use sqlite::persistent_page_worker::PersistentPageWorker;
 use sqlite::sqlite_persistent::in_memory_db;
 
+use crate::backend_args::BackendArgs;
 use crate::teloxide_bot::TeloxidePageUploader;
 
+mod backend_args;
 mod teloxide_bot;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let backend_args = BackendArgs::parse();
     let persistence = Arc::new(create_persistent().await?);
     let config = RestBackend::new(
         8080,
