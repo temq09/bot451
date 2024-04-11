@@ -44,7 +44,7 @@ async fn get_page(
     bot: Bot,
     url: String,
     message: Message,
-    worker: Arc<ParallelPageWorker>,
+    worker: Arc<dyn PageWorker>,
 ) -> HandlerResult {
     let page_data = PageData::from_url(url, message.chat.id.to_string());
     let page_result = worker.submit_page_generation(page_data).await?;
