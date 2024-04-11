@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use reqwest::Client;
+use reqwest::{Client, Url};
 use serde_json::json;
 
 use api::{PageData, PageResult, PageWorker};
@@ -25,11 +25,9 @@ impl PageWorker for HttpBotBackendParams {
             "page_url": page_data.url,
             "user_id": page_data.user_id
         });
-        self.client
-            .post(&self.backend_endpoint)
-            .json(&body)
-            .send()
-            .await?;
+        let mut url = Url::parse(&self.backend_endpoint)?;
+        url.set_path("v1/requestPageForUser");
+        self.client.post(url).json(&body).send().await?;
         return Ok(PageResult::Noop);
     }
 }
