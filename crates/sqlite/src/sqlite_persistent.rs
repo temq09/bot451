@@ -6,7 +6,7 @@ use sqlx::{Pool, Row, Sqlite, SqlitePool};
 use api::{PageInfo, PagePersistent};
 
 pub struct SqlitePagePersistent {
-    connection: Pool<Sqlite>,
+    connection: SqlitePool,
 }
 
 pub async fn init_db(path: String) -> anyhow::Result<SqlitePagePersistent> {
