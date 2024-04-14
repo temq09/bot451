@@ -10,10 +10,7 @@ pub struct PersistentPageWorker {
 }
 
 impl PersistentPageWorker {
-    pub fn new(
-        storage: Arc<impl PagePersistent + 'static>,
-        fallback_worker: Box<dyn PageWorker>,
-    ) -> Self {
+    pub fn new(storage: Arc<dyn PagePersistent>, fallback_worker: Box<dyn PageWorker>) -> Self {
         PersistentPageWorker {
             storage,
             fallback_worker,

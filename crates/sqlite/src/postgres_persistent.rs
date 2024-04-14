@@ -16,7 +16,7 @@ impl PostgresPersistent {
         password: &str,
         database: &str,
         host: &str,
-    ) -> anyhow::Result<PostgresPersistent> {
+    ) -> anyhow::Result<impl PagePersistent> {
         let options = PgConnectOptions::new()
             .host(host)
             .database(database)

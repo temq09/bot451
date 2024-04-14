@@ -18,7 +18,7 @@ impl LoadPageHandler {
     pub(crate) fn new(
         loader: Box<dyn PageWorker>,
         page_uploader: Box<dyn PageUploader>,
-        cache: Arc<impl PagePersistent + 'static>,
+        cache: Arc<dyn PagePersistent + 'static>,
     ) -> Self {
         LoadPageHandler {
             page_loader: loader,

@@ -20,7 +20,6 @@ mod teloxide_bot;
 async fn main() -> anyhow::Result<()> {
     let backend_args = BackendArgs::parse();
     let persistence = create_persistent(&backend_args).await?;
-    let persistence = Arc::new(persistence.as_ref());
     let config = RestBackend::new(
         8080,
         create_loader(persistence.clone()),
@@ -30,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
     init(config).await
 }
 
-fn create_loader(cache: Arc<impl PagePersistent + 'static>) -> impl PageWorker {
+fn create_loader(cache: Arc<dyn PagePersistent>) -> impl PageWorker {
     let network_page_worker =
         ParallelPageWorker::new("/Users/artemushakov/prog/tmp/singlefile".to_string());
     PersistentPageWorker::new(cache, Box::new(network_page_worker))
@@ -40,7 +39,7 @@ fn create_uploader() -> impl PageUploader {
     TeloxidePageUploader::new_from_env()
 }
 
-async fn create_persistent(args: &BackendArgs) -> anyhow::Result<Box<dyn PagePersistent>> {
+async fn create_persistent(args: &BackendArgs) -> anyhow::Result<Arc<dyn PagePersistent>> {
     if let Some(url) = args.postgres_url.as_ref() {
         create_postgres(url, args).await
     } else {
@@ -51,7 +50,7 @@ async fn create_persistent(args: &BackendArgs) -> anyhow::Result<Box<dyn PagePer
 async fn create_postgres(
     host: &str,
     args: &BackendArgs,
-) -> anyhow::Result<Box<dyn PagePersistent>> {
+) -> anyhow::Result<Arc<dyn PagePersistent>> {
     let password = args
         .pg_password
         .as_ref()
@@ -65,14 +64,12 @@ async fn create_postgres(
         .as_ref()
         .context("Database must be set when postgres is used")?;
 
-    PostgresPersistent::connect(username, password, db, host)
-        .await
-        .map(|persistent| Box::new(persistent))
+    let persistent = PostgresPersistent::connect(username, password, db, host).await?;
+    Ok(Arc::new(persistent))
 }
 
-async fn create_sqlite(args: &BackendArgs) -> anyhow::Result<Box<dyn PagePersistent>> {
+async fn create_sqlite(args: &BackendArgs) -> anyhow::Result<Arc<dyn PagePersistent>> {
     let work_dir = args.work_dir.as_ref().context("Workdir must be set")?;
-    init_db(work_dir.to_string())
-        .await
-        .map(|persistent| Box::new(persistent))
+    let persistent = init_db(work_dir.to_string()).await?;
+    Ok(Arc::new(persistent))
 }
