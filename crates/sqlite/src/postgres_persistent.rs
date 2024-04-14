@@ -1,5 +1,7 @@
 use anyhow::bail;
+use async_trait::async_trait;
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgRow};
+use sqlx::types::time::OffsetDateTime;
 use sqlx::{PgPool, Row};
 
 use api::{PageInfo, PagePersistent};
@@ -45,6 +47,7 @@ async fn init_database(connection: &PgPool) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[async_trait]
 impl PagePersistent for PostgresPersistent {
     async fn save(&self, page_info: &PageInfo) -> anyhow::Result<()> {
         let count = sqlx::query(
@@ -90,7 +93,7 @@ fn map_row(row: PgRow) -> anyhow::Result<Option<PageInfo>> {
     let page_info = PageInfo {
         page_url: row.try_get(1)?,
         file_hash: row.try_get(2)?,
-        timestamp_ms: row.try_get::<i64, usize>(3)? as u128,
+        timestamp_ms: row.try_get::<OffsetDateTime, usize>(3)?,
         telegram_file_id: row.try_get(4)?,
     };
 

@@ -10,6 +10,7 @@ anyhow = { workspace = true }
 serde_json = { workspace = true }
 sha2 = { workspace = true }
 base64 = { workspace = true }
+time = { workspace = true }
 api = { path = "../api" }
 
 [dev-dependencies]

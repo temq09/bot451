@@ -1,10 +1,10 @@
 use std::io::Read;
 use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use sha2::{Digest, Sha256};
+use time::OffsetDateTime;
 
 use api::{PageData, PageInfo, PagePersistent, PageResult, PageUploader, PageWorker};
 
@@ -54,10 +54,7 @@ async fn save_to_cache(
         telegram_file_id: file_id.to_string(),
         file_hash: hash,
         page_url,
-        timestamp_ms: SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map(|duration| duration.as_millis())
-            .unwrap_or(0),
+        timestamp_ms: OffsetDateTime::now_utc(),
     });
 
     if let Some(page_info) = page_info {

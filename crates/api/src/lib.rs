@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use time::OffsetDateTime;
 
 pub struct PageData {
     pub url: String,
@@ -37,7 +38,7 @@ pub struct PageInfo {
     pub telegram_file_id: String,
     pub file_hash: String,
     pub page_url: String,
-    pub timestamp_ms: u128,
+    pub timestamp_ms: OffsetDateTime,
 }
 
 #[async_trait]
