@@ -20,6 +20,6 @@ pub(crate) struct BackendArgs {
     pub(crate) pg_password: Option<String>,
 
     /// PostgresSQL table
-    #[arg(long, value_name = "TABLE_NAME")]
-    pub(crate) pg_table: Option<String>,
+    #[arg(long, value_name = "DATABASE")]
+    pub(crate) pg_database: Option<String>,
 }
