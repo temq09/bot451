@@ -11,8 +11,8 @@ pub struct PostgresPersistent {
 }
 
 impl PostgresPersistent {
-    async fn connect(
-        user_name: &str,
+    pub async fn connect(
+        username: &str,
         password: &str,
         database: &str,
         host: &str,
@@ -21,7 +21,7 @@ impl PostgresPersistent {
             .host(host)
             .database(database)
             .password(password)
-            .username(user_name);
+            .username(username);
 
         let pool = PgPoolOptions::new().connect_with(options).await?;
 
