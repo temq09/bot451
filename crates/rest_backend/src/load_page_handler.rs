@@ -1,10 +1,10 @@
 use std::io::Read;
 use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use sha2::{Digest, Sha256};
+use time::{OffsetDateTime, PrimitiveDateTime};
 
 use api::{PageData, PageInfo, PagePersistent, PageResult, PageUploader, PageWorker};
 
@@ -18,7 +18,7 @@ impl LoadPageHandler {
     pub(crate) fn new(
         loader: Box<dyn PageWorker>,
         page_uploader: Box<dyn PageUploader>,
-        cache: Arc<impl PagePersistent + 'static>,
+        cache: Arc<dyn PagePersistent + 'static>,
     ) -> Self {
         LoadPageHandler {
             page_loader: loader,
@@ -50,14 +50,13 @@ async fn save_to_cache(
     cache: &Arc<dyn PagePersistent>,
     page_url: String,
 ) {
+    let current_time = OffsetDateTime::now_utc();
+    let primitive_time = PrimitiveDateTime::new(current_time.date(), current_time.time());
     let page_info = prepare_page_info(&result).map(|hash| PageInfo {
         telegram_file_id: file_id.to_string(),
         file_hash: hash,
         page_url,
-        timestamp_ms: SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map(|duration| duration.as_millis())
-            .unwrap_or(0),
+        timestamp_ms: primitive_time,
     });
 
     if let Some(page_info) = page_info {

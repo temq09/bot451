@@ -10,10 +10,7 @@ pub struct PersistentPageWorker {
 }
 
 impl PersistentPageWorker {
-    pub fn new(
-        storage: Arc<impl PagePersistent + 'static>,
-        fallback_worker: Box<dyn PageWorker>,
-    ) -> Self {
+    pub fn new(storage: Arc<dyn PagePersistent>, fallback_worker: Box<dyn PageWorker>) -> Self {
         PersistentPageWorker {
             storage,
             fallback_worker,
@@ -39,6 +36,10 @@ impl PageWorker for PersistentPageWorker {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
+    use time::{Date, Month, PrimitiveDateTime, Time};
+
     use api::{PageData, PageInfo, PageResult, PageWorker};
 
     use crate::persistent_page_worker::test_impl::{MockPagePersistent, MockPageWorker};
@@ -52,7 +53,7 @@ mod tests {
             "url_1".to_string(),
             PageResult::TelegramId("id_1".to_string()),
         );
-        let worker = PersistentPageWorker::new(Box::new(persistent), page_worker);
+        let worker = PersistentPageWorker::new(Arc::new(persistent), page_worker);
 
         let result = worker
             .submit_page_generation(PageData::from_url("url_1".to_string(), "id".to_string()))
@@ -72,7 +73,10 @@ mod tests {
                 telegram_file_id: "telegram_id".to_string(),
                 file_hash: "hash".to_string(),
                 page_url: "url_1".to_string(),
-                timestamp_ms: 123,
+                timestamp_ms: PrimitiveDateTime::new(
+                    Date::from_calendar_date(2024, Month::January, 02)?,
+                    Time::from_hms(10, 10, 10)?,
+                ),
             },
         );
         let mut page_worker = Box::new(MockPageWorker::new());
@@ -80,7 +84,7 @@ mod tests {
             "url_1".to_string(),
             PageResult::FilePath("/some/path".to_string()),
         );
-        let worker = PersistentPageWorker::new(Box::new(persistent), page_worker);
+        let worker = PersistentPageWorker::new(Arc::new(persistent), page_worker);
 
         let result = worker
             .submit_page_generation(PageData::from_url("url_1".to_string(), "id".to_string()))

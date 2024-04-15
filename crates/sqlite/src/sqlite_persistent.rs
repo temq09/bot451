@@ -2,11 +2,12 @@ use anyhow::bail;
 use async_trait::async_trait;
 use sqlx::sqlite::SqliteRow;
 use sqlx::{Pool, Row, Sqlite, SqlitePool};
+use time::PrimitiveDateTime;
 
 use api::{PageInfo, PagePersistent};
 
 pub struct SqlitePagePersistent {
-    connection: Pool<Sqlite>,
+    connection: SqlitePool,
 }
 
 pub async fn init_db(path: String) -> anyhow::Result<SqlitePagePersistent> {
@@ -44,7 +45,7 @@ impl PagePersistent for SqlitePagePersistent {
         let count = sqlx::query(INSERT_QUERY)
             .bind(&page_info.page_url)
             .bind(&page_info.file_hash)
-            .bind(page_info.timestamp_ms.to_string().as_str())
+            .bind(page_info.timestamp_ms)
             .bind(&page_info.telegram_file_id)
             .execute(&self.connection)
             .await?
@@ -79,7 +80,7 @@ fn map_row(row: SqliteRow) -> anyhow::Result<Option<PageInfo>> {
     let page_info = PageInfo {
         page_url: row.try_get(1)?,
         file_hash: row.try_get(2)?,
-        timestamp_ms: row.try_get::<i64, usize>(3)? as u128,
+        timestamp_ms: row.try_get::<PrimitiveDateTime, usize>(3)?,
         telegram_file_id: row.try_get(4)?,
     };
 
@@ -88,6 +89,9 @@ fn map_row(row: SqliteRow) -> anyhow::Result<Option<PageInfo>> {
 
 #[cfg(test)]
 mod test {
+    use sqlx::types::time::{Date, Time};
+    use time::{Month, PrimitiveDateTime};
+
     use api::{PageInfo, PagePersistent};
 
     use crate::sqlite_persistent::init_db;
@@ -99,7 +103,10 @@ mod test {
             telegram_file_id: "telegram_file_id".to_string(),
             file_hash: "file_hash".to_string(),
             page_url: "url".to_string(),
-            timestamp_ms: 123,
+            timestamp_ms: PrimitiveDateTime::new(
+                Date::from_calendar_date(2024, Month::January, 02)?,
+                Time::from_hms(10, 10, 10)?,
+            ),
         };
         db.save(&page_info).await?;
         let result = db.get("url").await?;
