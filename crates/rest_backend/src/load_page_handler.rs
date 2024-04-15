@@ -4,7 +4,7 @@ use std::sync::Arc;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use sha2::{Digest, Sha256};
-use time::OffsetDateTime;
+use time::{OffsetDateTime, PrimitiveDateTime};
 
 use api::{PageData, PageInfo, PagePersistent, PageResult, PageUploader, PageWorker};
 
@@ -50,11 +50,13 @@ async fn save_to_cache(
     cache: &Arc<dyn PagePersistent>,
     page_url: String,
 ) {
+    let current_time = OffsetDateTime::now_utc();
+    let primitive_time = PrimitiveDateTime::new(current_time.date(), current_time.time());
     let page_info = prepare_page_info(&result).map(|hash| PageInfo {
         telegram_file_id: file_id.to_string(),
         file_hash: hash,
         page_url,
-        timestamp_ms: OffsetDateTime::now_utc(),
+        timestamp_ms: primitive_time,
     });
 
     if let Some(page_info) = page_info {

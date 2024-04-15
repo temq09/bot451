@@ -1,8 +1,8 @@
 use anyhow::bail;
 use async_trait::async_trait;
 use sqlx::sqlite::SqliteRow;
-use sqlx::types::time::OffsetDateTime;
 use sqlx::{Pool, Row, Sqlite, SqlitePool};
+use time::PrimitiveDateTime;
 
 use api::{PageInfo, PagePersistent};
 
@@ -80,7 +80,7 @@ fn map_row(row: SqliteRow) -> anyhow::Result<Option<PageInfo>> {
     let page_info = PageInfo {
         page_url: row.try_get(1)?,
         file_hash: row.try_get(2)?,
-        timestamp_ms: row.try_get::<OffsetDateTime, usize>(3)?,
+        timestamp_ms: row.try_get::<PrimitiveDateTime, usize>(3)?,
         telegram_file_id: row.try_get(4)?,
     };
 
@@ -89,8 +89,8 @@ fn map_row(row: SqliteRow) -> anyhow::Result<Option<PageInfo>> {
 
 #[cfg(test)]
 mod test {
-    use sqlx::types::time::{Date, OffsetDateTime, Time};
-    use time::Month;
+    use sqlx::types::time::{Date, Time};
+    use time::{Month, PrimitiveDateTime};
 
     use api::{PageInfo, PagePersistent};
 
@@ -103,7 +103,7 @@ mod test {
             telegram_file_id: "telegram_file_id".to_string(),
             file_hash: "file_hash".to_string(),
             page_url: "url".to_string(),
-            timestamp_ms: OffsetDateTime::new_utc(
+            timestamp_ms: PrimitiveDateTime::new(
                 Date::from_calendar_date(2024, Month::January, 02)?,
                 Time::from_hms(10, 10, 10)?,
             ),

@@ -38,7 +38,7 @@ impl PageWorker for PersistentPageWorker {
 mod tests {
     use std::sync::Arc;
 
-    use time::{Date, Month, OffsetDateTime, Time};
+    use time::{Date, Month, PrimitiveDateTime, Time};
 
     use api::{PageData, PageInfo, PageResult, PageWorker};
 
@@ -73,7 +73,7 @@ mod tests {
                 telegram_file_id: "telegram_id".to_string(),
                 file_hash: "hash".to_string(),
                 page_url: "url_1".to_string(),
-                timestamp_ms: OffsetDateTime::new_utc(
+                timestamp_ms: PrimitiveDateTime::new(
                     Date::from_calendar_date(2024, Month::January, 02)?,
                     Time::from_hms(10, 10, 10)?,
                 ),

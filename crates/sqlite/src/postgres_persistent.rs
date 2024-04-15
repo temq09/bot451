@@ -1,8 +1,8 @@
 use anyhow::bail;
 use async_trait::async_trait;
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgRow};
-use sqlx::types::time::OffsetDateTime;
 use sqlx::{PgPool, Row};
+use time::PrimitiveDateTime;
 
 use api::{PageInfo, PagePersistent};
 
@@ -19,6 +19,7 @@ impl PostgresPersistent {
     ) -> anyhow::Result<impl PagePersistent> {
         let options = PgConnectOptions::new()
             .host(host)
+            .port(5432)
             .database(database)
             .password(password)
             .username(username);
@@ -35,7 +36,7 @@ async fn init_database(connection: &PgPool) -> anyhow::Result<()> {
     sqlx::query(
         r#"
             CREATE TABLE IF NOT EXISTS telegram_documents (
-                id INTEGER PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 page_url TEXT NOT NULL,
                 file_hash TEXT NOT NULL,
                 timestamp TIMESTAMP NOT NULL,
@@ -58,7 +59,7 @@ impl PagePersistent for PostgresPersistent {
         )
         .bind(&page_info.page_url)
         .bind(&page_info.file_hash)
-        .bind(page_info.timestamp_ms.to_string().as_str())
+        .bind(page_info.timestamp_ms)
         .bind(&page_info.telegram_file_id)
         .execute(&self.connection)
         .await?
@@ -73,10 +74,11 @@ impl PagePersistent for PostgresPersistent {
 
     async fn get(&self, page_url: &str) -> anyhow::Result<Option<PageInfo>> {
         let result = sqlx::query(
-            r#"
+            "
             SELECT * FROM telegram_documents
             WHERE page_url = $1
-            "#,
+            LIMIT 1
+            ",
         )
         .bind(page_url)
         .fetch_optional(&self.connection)
@@ -91,10 +93,10 @@ impl PagePersistent for PostgresPersistent {
 
 fn map_row(row: PgRow) -> anyhow::Result<Option<PageInfo>> {
     let page_info = PageInfo {
-        page_url: row.try_get(1)?,
-        file_hash: row.try_get(2)?,
-        timestamp_ms: row.try_get::<OffsetDateTime, usize>(3)?,
-        telegram_file_id: row.try_get(4)?,
+        page_url: row.try_get("page_url")?,
+        file_hash: row.try_get("file_hash")?,
+        timestamp_ms: row.try_get::<PrimitiveDateTime, &str>("timestamp")?,
+        telegram_file_id: row.try_get("telegram_file_id")?,
     };
 
     return Ok(Some(page_info));
