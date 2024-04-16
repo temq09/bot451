@@ -1,6 +1,8 @@
+use std::ops::Sub;
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use time::PrimitiveDateTime;
 
 use api::{PageData, PagePersistent, PageResult, PageWorker};
 
@@ -25,7 +27,14 @@ impl PageWorker for PersistentPageWorker {
             .storage
             .get(page_data.url.as_str())
             .await
-            .unwrap_or(None);
+            .unwrap_or(None)
+            .and_then(|page| {
+                if is_not_expired(&page.timestamp_ms) {
+                    Some(page)
+                } else {
+                    None
+                }
+            });
 
         match persistent_page_data {
             None => self.fallback_worker.submit_page_generation(page_data).await,
@@ -34,11 +43,15 @@ impl PageWorker for PersistentPageWorker {
     }
 }
 
+fn is_not_expired(page_loaded_time: &PrimitiveDateTime) -> bool {
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
 
-    use time::{Date, Month, PrimitiveDateTime, Time};
+    use time::macros::datetime;
 
     use api::{PageData, PageInfo, PageResult, PageWorker};
 
@@ -73,10 +86,7 @@ mod tests {
                 telegram_file_id: "telegram_id".to_string(),
                 file_hash: "hash".to_string(),
                 page_url: "url_1".to_string(),
-                timestamp_ms: PrimitiveDateTime::new(
-                    Date::from_calendar_date(2024, Month::January, 02)?,
-                    Time::from_hms(10, 10, 10)?,
-                ),
+                timestamp_ms: datetime!(2024-01-02 10:10:10),
             },
         );
         let mut page_worker = Box::new(MockPageWorker::new());
