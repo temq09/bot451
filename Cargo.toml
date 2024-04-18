@@ -19,6 +19,7 @@ members = [
     "crates/proto",
     "crates/rest_backend",
     "crates/sqlite",
+    "crates/utils",
 ]
 
 [workspace.dependencies]
