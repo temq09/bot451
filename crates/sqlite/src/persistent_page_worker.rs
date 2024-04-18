@@ -46,8 +46,8 @@ impl PageWorker for PersistentPageWorker {
 }
 
 fn is_expired(page_loaded_time: &PrimitiveDateTime) -> bool {
-    current_time_secs() - page_loaded_time.assume_utc().unix_timestamp() > 60 * 10
     // 10 minutes
+    current_time_secs() - page_loaded_time.assume_utc().unix_timestamp() > 60 * 10
 }
 
 #[cfg(test)]
