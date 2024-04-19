@@ -1716,7 +1716,7 @@ dependencies = [
  "tempfile",
  "time",
  "tokio",
-    "utils",
+ "utils",
 ]
 
 [[package]]
@@ -2024,6 +2024,7 @@ dependencies = [
  "async-trait",
  "sqlx",
  "time",
+ "utils",
 ]
 
 [[package]]
@@ -2674,9 +2675,9 @@ checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
 name = "utils"
 version = "0.1.0"
 dependencies = [
-    "anyhow",
-    "base64 0.22.0",
-    "sha2",
+ "anyhow",
+ "base64 0.22.0",
+ "sha2",
 ]
 
 [[package]]

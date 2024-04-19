@@ -7,6 +7,7 @@ use async_trait::async_trait;
 use time::PrimitiveDateTime;
 
 use api::{PageData, PagePersistent, PageResult, PageWorker};
+use utils::hash::make_hash_for_file;
 
 pub struct PersistentPageWorker {
     storage: Arc<dyn PagePersistent>,
@@ -29,18 +30,31 @@ impl PageWorker for PersistentPageWorker {
             .storage
             .get(page_data.url.as_str())
             .await
-            .unwrap_or(None)
-            .and_then(|page| {
-                if is_expired(&page.timestamp_ms) {
-                    None
-                } else {
-                    Some(page)
-                }
-            });
+            .unwrap_or(None);
 
         match persistent_page_data {
             None => self.fallback_worker.submit_page_generation(page_data).await,
-            Some(persistent_page) => Ok(PageResult::TelegramId(persistent_page.telegram_file_id)),
+            Some(persistent_page) => {
+                if is_expired(&persistent_page.timestamp_ms) {
+                    let new_page = self
+                        .fallback_worker
+                        .submit_page_generation(page_data)
+                        .await?;
+                    match new_page {
+                        PageResult::FilePath(path) => {
+                            let new_page_hash = make_hash_for_file(&path).unwrap_or(String::new());
+                            if new_page_hash == persistent_page.file_hash {
+                                Ok(PageResult::TelegramId(persistent_page.telegram_file_id))
+                            } else {
+                                Ok(PageResult::FilePath(path))
+                            }
+                        }
+                        _ => Ok(new_page),
+                    }
+                } else {
+                    Ok(PageResult::TelegramId(persistent_page.telegram_file_id))
+                }
+            }
         }
     }
 }
