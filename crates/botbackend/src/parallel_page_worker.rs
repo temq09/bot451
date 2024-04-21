@@ -25,6 +25,7 @@ impl PageWorker for ParallelPageWorker {
         let path_str = file_path.to_str().unwrap().to_owned();
         let result = PageResult::FilePath(path_str.to_owned());
         let output = Command::new("/Users/artemushakov/prog/tmp/singlefile/singlefile")
+            .arg("--remove-saved-date")
             .arg(page_data.url)
             .arg(path_str)
             .output()?;

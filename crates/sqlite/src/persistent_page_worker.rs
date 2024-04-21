@@ -6,7 +6,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use async_trait::async_trait;
 use time::PrimitiveDateTime;
 
-use api::{PageData, PagePersistent, PageResult, PageWorker};
+use api::{PageData, PageInfo, PagePersistent, PageResult, PageWorker};
+use utils::hash::make_hash_for_file;
 
 pub struct PersistentPageWorker {
     storage: Arc<dyn PagePersistent>,
@@ -29,19 +30,41 @@ impl PageWorker for PersistentPageWorker {
             .storage
             .get(page_data.url.as_str())
             .await
-            .unwrap_or(None)
-            .and_then(|page| {
-                if is_expired(&page.timestamp_ms) {
-                    None
-                } else {
-                    Some(page)
-                }
-            });
+            .unwrap_or(None);
 
         match persistent_page_data {
             None => self.fallback_worker.submit_page_generation(page_data).await,
-            Some(persistent_page) => Ok(PageResult::TelegramId(persistent_page.telegram_file_id)),
+            Some(persistent_page) => {
+                download_for_existing_page(persistent_page, page_data, &self.fallback_worker).await
+            }
         }
+    }
+}
+
+async fn download_for_existing_page(
+    persistent_page: PageInfo,
+    page_data: PageData,
+    fallback_worker: &Box<dyn PageWorker>,
+) -> anyhow::Result<PageResult> {
+    if is_expired(&persistent_page.timestamp_ms) {
+        let new_page = fallback_worker.submit_page_generation(page_data).await?;
+        match new_page {
+            PageResult::FilePath(path) => Ok(handle_new_page(path, &persistent_page)),
+            _ => Ok(new_page),
+        }
+    } else {
+        Ok(PageResult::TelegramId(
+            persistent_page.telegram_file_id.clone(),
+        ))
+    }
+}
+
+fn handle_new_page(path: String, current_page: &PageInfo) -> PageResult {
+    let new_page_hash = make_hash_for_file(&path).unwrap_or(String::new());
+    if new_page_hash == current_page.file_hash {
+        PageResult::TelegramId(current_page.telegram_file_id.clone())
+    } else {
+        PageResult::FilePath(path)
     }
 }
 
@@ -70,14 +93,19 @@ fn current_time_secs() -> i64 {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::File;
+    use std::io::Write;
     use std::sync::Arc;
 
+    use tempfile::tempdir;
     use time::macros::datetime;
 
     use api::{PageData, PageInfo, PageResult, PageWorker};
 
     use crate::persistent_page_worker::test_impl::{MockPagePersistent, MockPageWorker};
-    use crate::persistent_page_worker::{is_expired, PersistentPageWorker, CURRENT_TIMESTAMP};
+    use crate::persistent_page_worker::{
+        handle_new_page, is_expired, PersistentPageWorker, CURRENT_TIMESTAMP,
+    };
 
     #[sqlx::test]
     async fn test_no_item_in_cache() -> anyhow::Result<()> {
@@ -196,6 +224,35 @@ mod tests {
 
         CURRENT_TIMESTAMP.set(Some(i64::MAX));
         assert!(is_expired(&datetime!(2024-01-01 00:15:00)));
+    }
+
+    #[test]
+    fn test_handle_new_page() -> anyhow::Result<()> {
+        let tmpdir = tempdir()?;
+        let file_path = tmpdir.path().join("test.txt");
+        let file_path_str = file_path.to_str().unwrap();
+        let mut file = File::create(&file_path)?;
+        write!(file, "test hash")?;
+        let page_info =
+            page_info_with_hash("VKZIO4rKVcnfKjW69x2ZZd39YjRo2B1RIpvV630eHBs=", "tg_id_1");
+
+        let result = handle_new_page(file_path_str.to_string(), &page_info);
+        assert_eq!(result, PageResult::TelegramId("tg_id_1".to_string()));
+
+        let page_info_different_hash = page_info_with_hash("new_hash", "tg_id_2");
+        let result = handle_new_page(file_path_str.to_string(), &page_info_different_hash);
+        assert_eq!(result, PageResult::FilePath(file_path_str.to_string()));
+
+        Ok(())
+    }
+
+    fn page_info_with_hash(hash: &str, tg_file_id: &str) -> PageInfo {
+        PageInfo {
+            telegram_file_id: tg_file_id.to_string(),
+            file_hash: hash.to_string(),
+            page_url: "page_url".to_string(),
+            timestamp_ms: datetime!(2020-01-01 00:00:00),
+        }
     }
 }
 

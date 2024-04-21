@@ -5,7 +5,11 @@ edition = "2021"
 
 [dependencies]
 api = { path = "../api" }
+utils = { path = "../utils" }
 sqlx = { workspace = true }
 async-trait = { workspace = true }
 anyhow = { workspace = true }
 time = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
