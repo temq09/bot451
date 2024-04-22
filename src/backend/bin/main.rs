@@ -22,16 +22,15 @@ async fn main() -> anyhow::Result<()> {
     let persistence = create_persistent(&backend_args).await?;
     let config = RestBackend::new(
         8080,
-        create_loader(persistence.clone()),
+        create_loader(persistence.clone(), &backend_args.singlefile_cli),
         create_uploader(),
         persistence,
     );
     init(config).await
 }
 
-fn create_loader(cache: Arc<dyn PagePersistent>) -> impl PageWorker {
-    let network_page_worker =
-        ParallelPageWorker::new("/Users/artemushakov/prog/tmp/singlefile".to_string());
+fn create_loader(cache: Arc<dyn PagePersistent>, singlefile_cli: &str) -> impl PageWorker {
+    let network_page_worker = ParallelPageWorker::new(singlefile_cli.to_string());
     PersistentPageWorker::new(cache, Box::new(network_page_worker))
 }
 

@@ -10,6 +10,10 @@ pub(crate) struct BotArgs {
     /// Backend url the bot will interact with
     #[arg(long, value_name = "URL")]
     pub(crate) backend_url: Option<String>,
+
+    /// Path to singlefile binary
+    #[arg(env)]
+    pub(crate) singlefile_cli: Option<String>,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]

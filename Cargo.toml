@@ -35,7 +35,7 @@ sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio", "postgres", "
 sha2 = "0.10.8"
 base64 = "0.22.0"
 nanoid = "0.4.0"
-clap = { version = "4.5.4", features = ["derive"] }
+clap = { version = "4.5.4", features = ["derive", "env"] }
 time = { version = "0.3.36" }
 
 [dependencies]

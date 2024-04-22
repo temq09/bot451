@@ -22,4 +22,8 @@ pub(crate) struct BackendArgs {
     /// PostgresSQL table
     #[arg(long, value_name = "DATABASE")]
     pub(crate) pg_database: Option<String>,
+
+    /// Path to singlefile binary
+    #[arg(env)]
+    pub(crate) singlefile_cli: String,
 }
