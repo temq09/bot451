@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use clap::Parser;
 use dptree::case;
 use teloxide::dispatching::UpdateHandler;
@@ -78,8 +78,10 @@ async fn print_help(bot: Bot, message: Message) -> HandlerResult {
 fn create_worker(args: BotArgs) -> anyhow::Result<Arc<dyn PageWorker>> {
     match args.mode.unwrap_or(Mode::Standalone) {
         Mode::Standalone => {
-            let worker =
-                ParallelPageWorker::new("/Users/artemushakov/prog/tmp/singlefile".to_string());
+            let singlefile_cli_path = args
+                .singlefile_cli
+                .context("SINGLEFILE_CLI env variable must be set for the standalone mode")?;
+            let worker = ParallelPageWorker::new(singlefile_cli_path);
             Ok(Arc::new(worker))
         }
         Mode::Distributed => {
