@@ -15,6 +15,25 @@ RUN cargo build --release --bin bot
 
 # We do not need the Rust toolchain to run the binary!
 FROM debian:bookworm-slim AS runtime
+RUN \
+     echo "**** install packages ****" && \
+     apt-get update && \
+     apt-get install -y --no-install-recommends \
+       chromium \
+       chromium-l10n \
+       unzip \
+       ca-certificates \
+       curl && \
+     curl -fsSL https://deno.land/install.sh | sh && \
+     curl -o single-file https://github.com/gildas-lormeau/single-file-cli/releases/download/v2.0.33/single-file-x86_64-linux && \
+     chmod +x single-file && \
+     echo "**** cleanup ****" && \
+     apt-get autoclean && \
+     rm -rf \
+       /config/.cache \
+       /var/lib/apt/lists/* \
+       /var/tmp/* \
+       /tmp/*
 WORKDIR /app
 COPY --from=builder /app/target/release/bot /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/bot"]
