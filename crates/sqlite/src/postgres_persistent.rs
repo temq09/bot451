@@ -45,6 +45,16 @@ async fn init_database(connection: &PgPool) -> anyhow::Result<()> {
     )
     .execute(connection)
     .await?;
+
+    // index for the field that used for all get requests
+    sqlx::query(
+        r#"
+        CREATE INDEX IF NOT EXISTS idx_page_url
+        ON telegram_documents(page_url)
+        "#,
+    )
+    .execute(connection)
+    .await?;
     Ok(())
 }
 
@@ -77,6 +87,7 @@ impl PagePersistent for PostgresPersistent {
             "
             SELECT * FROM telegram_documents
             WHERE page_url = $1
+            ORDER BY timestamp
             LIMIT 1
             ",
         )
