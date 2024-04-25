@@ -87,7 +87,7 @@ impl PagePersistent for PostgresPersistent {
             "
             SELECT * FROM telegram_documents
             WHERE page_url = $1
-            ORDER BY timestamp
+            ORDER BY timestamp DESC
             LIMIT 1
             ",
         )
