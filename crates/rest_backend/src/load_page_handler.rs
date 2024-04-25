@@ -38,6 +38,7 @@ impl LoadPageHandler {
         if let Some(file_id) = file_id {
             save_to_cache(&file_id, &result, &self.cache, page_url).await;
         }
+        clear_data(result).await;
         return Ok(());
     }
 }
@@ -59,6 +60,12 @@ async fn save_to_cache(
 
     if let Some(page_info) = page_info {
         let _ = cache.save(&page_info).await;
+    }
+}
+
+async fn clear_data(result: PageResult) {
+    if let PageResult::FilePath(path) = result {
+        tokio::fs::remove_file(path).await.ok();
     }
 }
 
