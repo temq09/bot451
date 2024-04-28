@@ -14,6 +14,10 @@ pub(crate) struct BotArgs {
     /// Path to singlefile binary
     #[arg(env)]
     pub(crate) singlefile_cli: Option<String>,
+
+    /// Path to a work dir where pages will be downloaded to. Must be set for Standalone mode
+    #[arg(long, value_name = "PATH")]
+    pub(crate) work_dir: Option<String>,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]

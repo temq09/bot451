@@ -1,21 +1,21 @@
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::{anyhow, Context};
 use clap::Parser;
 use dptree::case;
 use teloxide::dispatching::UpdateHandler;
-use teloxide::types::InputFile;
 use teloxide::{prelude::*, utils::command::BotCommands};
 
-use api::{PageData, PageResult, PageWorker};
-use bot_http_backend::HttpBotBackendParams;
-use botbackend::parallel_page_worker::ParallelPageWorker;
+use api::PageWorker;
 use proto::command::Command;
 
 use crate::bot_args::{BotArgs, Mode};
+use crate::worker::page_loader::PageLoader;
+use crate::worker::remote_page_loader::RemotePageLoader;
+use crate::worker::standalone_page_loader::StandalonePageLoader;
 
 mod bot_args;
+mod worker;
 
 type HandlerResult = Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
@@ -23,7 +23,7 @@ type HandlerResult = Result<(), Box<dyn std::error::Error + Send + Sync>>;
 async fn main() -> anyhow::Result<()> {
     let bot = Bot::from_env();
     let args = BotArgs::parse();
-    let worker = create_worker(args)?;
+    let worker = create_worker(args, bot.clone())?;
     Dispatcher::builder(bot, schema())
         .dependencies(dptree::deps![worker])
         .build()
@@ -40,32 +40,12 @@ fn schema() -> UpdateHandler<Box<dyn std::error::Error + Send + Sync + 'static>>
         .branch(case![Command::GetPage { url }].endpoint(get_page))
 }
 
-async fn get_page(
-    bot: Bot,
-    url: String,
-    message: Message,
-    worker: Arc<dyn PageWorker>,
-) -> HandlerResult {
-    let page_data = PageData::from_url(url, message.chat.id.to_string());
-    let page_result = worker.submit_page_generation(page_data).await?;
+async fn get_page(url: String, message: Message, worker: Arc<dyn PageLoader>) -> HandlerResult {
     println!("Chat id {}", message.chat.id);
-    send_document(message.chat.id.to_string(), &bot, page_result).await?;
+    worker
+        .load_page(url.to_string(), message.chat.id.to_string())
+        .await;
     return Ok(());
-}
-
-async fn send_document(chat_id: String, bot: &Bot, result: PageResult) -> anyhow::Result<()> {
-    if let Some(document) = result_to_input_file(result) {
-        bot.send_document(chat_id, document).await?;
-    }
-    return Ok(());
-}
-
-fn result_to_input_file(result: PageResult) -> Option<InputFile> {
-    match result {
-        PageResult::FilePath(path) => Some(InputFile::file(PathBuf::from(path))),
-        PageResult::TelegramId(id) => Some(InputFile::file_id(id)),
-        PageResult::Noop => None,
-    }
 }
 
 async fn print_help(bot: Bot, message: Message) -> HandlerResult {
@@ -75,21 +55,28 @@ async fn print_help(bot: Bot, message: Message) -> HandlerResult {
     return Ok(());
 }
 
-fn create_worker(args: BotArgs) -> anyhow::Result<Arc<dyn PageWorker>> {
+fn create_worker(args: BotArgs, bot: Bot) -> anyhow::Result<Arc<dyn PageLoader>> {
     match args.mode.unwrap_or(Mode::Standalone) {
         Mode::Standalone => {
             let singlefile_cli_path = args
                 .singlefile_cli
                 .context("SINGLEFILE_CLI env variable must be set for the standalone mode")?;
-            let worker = ParallelPageWorker::new(singlefile_cli_path);
-            Ok(Arc::new(worker))
+
+            let work_dir = args
+                .work_dir
+                .context("Working dir path must be set for standalone mode")?;
+            Ok(Arc::new(StandalonePageLoader::new(
+                singlefile_cli_path,
+                work_dir,
+                bot,
+            )))
         }
         Mode::Distributed => {
             let backend_url = args
                 .backend_url
                 .ok_or_else(|| anyhow!("Backend urls must be set for the distributed variant"))?;
-            let worker = HttpBotBackendParams::new(backend_url);
-            Ok(Arc::new(worker))
+            let loader = RemotePageLoader::new(backend_url.as_str())?;
+            Ok(Arc::new(loader))
         }
     }
 }

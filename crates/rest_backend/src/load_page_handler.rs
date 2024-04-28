@@ -32,7 +32,7 @@ impl LoadPageHandler {
     ) -> anyhow::Result<()> {
         let result = self
             .page_loader
-            .submit_page_generation(PageData::from_url(page_url.clone(), chat_id.clone()))
+            .submit_page_generation(PageData::from_url(page_url.clone()))
             .await?;
         let file_id = self.page_uploader.send_page(chat_id, &result).await?;
         if let Some(file_id) = file_id {
@@ -72,7 +72,7 @@ async fn clear_data(result: PageResult) {
 fn prepare_page_hash(page_result: &PageResult) -> Option<String> {
     match page_result {
         PageResult::FilePath(path) => make_hash_for_file(path),
-        PageResult::TelegramId(_) | PageResult::Noop => None,
+        PageResult::TelegramId(_) => None,
     }
 }
 
@@ -89,7 +89,6 @@ mod test {
 
     #[test]
     fn test_prepare_page_info_empty_result() {
-        assert_eq!(prepare_page_hash(&PageResult::Noop), None);
         assert_eq!(
             prepare_page_hash(&PageResult::TelegramId("id".to_string())),
             None
