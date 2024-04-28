@@ -23,11 +23,12 @@ impl PageWorker for HttpBotBackendParams {
     async fn submit_page_generation(&self, page_data: PageData) -> anyhow::Result<PageResult> {
         let body = json!({
             "page_url": page_data.url,
-            "user_id": page_data.user_id
+            // "user_id": page_data.user_id
         });
         let mut url = Url::parse(&self.backend_endpoint)?;
         url.set_path("v1/requestPageForUser");
         self.client.post(url).json(&body).send().await?;
-        return Ok(PageResult::Noop);
+        todo!()
+        // return Ok(PageResult::Noop);
     }
 }
