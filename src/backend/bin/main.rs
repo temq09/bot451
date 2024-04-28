@@ -22,15 +22,24 @@ async fn main() -> anyhow::Result<()> {
     let persistence = create_persistent(&backend_args).await?;
     let config = RestBackend::new(
         8080,
-        create_loader(persistence.clone(), &backend_args.singlefile_cli),
+        create_loader(
+            persistence.clone(),
+            &backend_args.singlefile_cli,
+            &backend_args.work_dir,
+        ),
         create_uploader(),
         persistence,
     );
     init(config).await
 }
 
-fn create_loader(cache: Arc<dyn PagePersistent>, singlefile_cli: &str) -> impl PageWorker {
-    let network_page_worker = ParallelPageWorker::new(singlefile_cli.to_string());
+fn create_loader(
+    cache: Arc<dyn PagePersistent>,
+    singlefile_cli: &str,
+    work_dir: &str,
+) -> impl PageWorker {
+    let network_page_worker =
+        ParallelPageWorker::new(work_dir.to_string(), singlefile_cli.to_string());
     PersistentPageWorker::new(cache, Box::new(network_page_worker))
 }
 
@@ -68,7 +77,7 @@ async fn create_postgres(
 }
 
 async fn create_sqlite(args: &BackendArgs) -> anyhow::Result<Arc<dyn PagePersistent>> {
-    let work_dir = args.work_dir.as_ref().context("Workdir must be set")?;
+    let work_dir = args.work_dir.as_str();
     let persistent = init_db(work_dir.to_string()).await?;
     Ok(Arc::new(persistent))
 }
