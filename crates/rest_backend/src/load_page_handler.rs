@@ -30,11 +30,21 @@ impl LoadPageHandler {
         page_url: String,
         chat_id: String,
     ) -> anyhow::Result<()> {
+        // is if page loading already?
+        //  loading     -> add chat_id to a queue, return from the function
+        //  not_loading -> block access to the chat_id queue,
+        //                 chat_id queue still empty?
+        //                  empty ->  request new page, add chat_id to a queue
+        //                  not_empty -> add chat_id to queue, return from function
+        //                 unlock access to the queue
         let result = self
             .page_loader
             .submit_page_generation(PageData::from_url(page_url.clone()))
             .await?;
-        let file_id = self.page_uploader.send_page(chat_id, &result).await?;
+
+        // get first chat_id from the queue
+        // send page + save to the cache
+        let file_id = self.page_uploader.send_page(&chat_id, &result).await?;
         if let Some(file_id) = file_id {
             save_to_cache(&file_id, &result, &self.cache, page_url).await;
         }
@@ -43,7 +53,7 @@ impl LoadPageHandler {
     }
 }
 
-async fn save_to_cache(
+pub(crate) async fn save_to_cache(
     file_id: &str,
     result: &PageResult,
     cache: &Arc<dyn PagePersistent>,
@@ -63,7 +73,7 @@ async fn save_to_cache(
     }
 }
 
-async fn clear_data(result: PageResult) {
+pub(crate) async fn clear_data(result: PageResult) {
     if let PageResult::FilePath(path) = result {
         tokio::fs::remove_file(path).await.ok();
     }

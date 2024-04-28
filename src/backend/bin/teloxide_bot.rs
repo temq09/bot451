@@ -21,7 +21,7 @@ impl TeloxidePageUploader {
 impl PageUploader for TeloxidePageUploader {
     async fn send_page(
         &self,
-        chat_id: String,
+        chat_id: &str,
         page_result: &PageResult,
     ) -> anyhow::Result<Option<String>> {
         let result = match to_input_file(page_result) {

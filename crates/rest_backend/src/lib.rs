@@ -10,14 +10,15 @@ use tokio::net::TcpListener;
 use api::{PagePersistent, PageUploader, PageWorker};
 
 use crate::error::AppError;
-use crate::load_page_handler::LoadPageHandler;
+use crate::queue_load_page_handler::QueuePageHandler;
 
 mod error;
 mod load_page_handler;
+mod queue_load_page_handler;
 
 pub struct RestBackend {
     port: u16,
-    page_loader: Arc<LoadPageHandler>,
+    page_loader: Arc<QueuePageHandler>,
 }
 
 impl RestBackend {
@@ -27,7 +28,7 @@ impl RestBackend {
         page_uploader: impl PageUploader + 'static,
         page_persistent: Arc<dyn PagePersistent + 'static>,
     ) -> Self {
-        let handler = LoadPageHandler::new(
+        let handler = QueuePageHandler::new(
             Box::new(page_loader),
             Box::new(page_uploader),
             page_persistent,
@@ -57,7 +58,7 @@ async fn create_listener(port: u16) -> anyhow::Result<TcpListener> {
 }
 
 async fn load_page(
-    State(page_loader): State<Arc<LoadPageHandler>>,
+    State(page_loader): State<Arc<QueuePageHandler>>,
     Json(payload): Json<serde_json::Value>,
 ) -> Result<(), AppError> {
     println!("Load page request for {}", payload);
