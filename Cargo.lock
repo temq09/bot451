@@ -270,17 +270,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bot_http_backend"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "api",
- "async-trait",
- "reqwest 0.12.3",
- "serde_json",
-]
-
-[[package]]
 name = "botbackend"
 version = "0.1.0"
 dependencies = [

@@ -14,7 +14,6 @@ path = "src/backend/bin/main.rs"
 [workspace]
 members = [
     "crates/api",
-    "crates/bot_http_backend",
     "crates/botbackend",
     "crates/proto",
     "crates/rest_backend",
@@ -48,7 +47,6 @@ clap.workspace = true
 reqwest.workspace = true
 serde_json.workspace = true
 botbackend = { path = "crates/botbackend" }
-#bot_http_backend = { path = "crates/bot_http_backend" }
 rest_backend = { path = "crates/rest_backend" }
 proto = { path = "crates/proto" }
 api = { path = "crates/api" }
