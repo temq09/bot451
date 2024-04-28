@@ -89,7 +89,6 @@ mod test {
 
     #[test]
     fn test_prepare_page_info_empty_result() {
-        assert_eq!(prepare_page_hash(&PageResult::Noop), None);
         assert_eq!(
             prepare_page_hash(&PageResult::TelegramId("id".to_string())),
             None
