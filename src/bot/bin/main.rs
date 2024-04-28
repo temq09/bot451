@@ -61,8 +61,13 @@ fn create_worker(args: BotArgs, bot: Bot) -> anyhow::Result<Arc<dyn PageLoader>>
             let singlefile_cli_path = args
                 .singlefile_cli
                 .context("SINGLEFILE_CLI env variable must be set for the standalone mode")?;
+
+            let work_dir = args
+                .work_dir
+                .context("Working dir path must be set for standalone mode")?;
             Ok(Arc::new(StandalonePageLoader::new(
                 singlefile_cli_path,
+                work_dir,
                 bot,
             )))
         }

@@ -16,8 +16,8 @@ pub(crate) struct StandalonePageLoader {
 }
 
 impl StandalonePageLoader {
-    pub(crate) fn new(singlefile_cli_path: String, bot: Bot) -> Self {
-        let worker = ParallelPageWorker::new(singlefile_cli_path);
+    pub(crate) fn new(singlefile_cli_path: String, work_dir: String, bot: Bot) -> Self {
+        let worker = ParallelPageWorker::new(work_dir, singlefile_cli_path);
         StandalonePageLoader { worker, bot }
     }
 }
