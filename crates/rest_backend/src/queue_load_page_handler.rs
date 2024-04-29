@@ -6,11 +6,13 @@ use api::{PageData, PagePersistent, PageResult, PageUploader, PageWorker};
 
 use crate::load_page_handler::{clear_data, save_to_cache};
 
+type ChatQueue = Arc<Mutex<HashMap<String, VecDeque<String>>>>;
+
 pub struct QueuePageHandler {
     page_loader: Box<dyn PageWorker>,
     page_uploader: Box<dyn PageUploader>,
     cache: Arc<dyn PagePersistent>,
-    queue: Arc<Mutex<HashMap<String, VecDeque<String>>>>,
+    queue: ChatQueue,
 }
 
 impl QueuePageHandler {
@@ -33,26 +35,13 @@ impl QueuePageHandler {
         chat_id: String,
     ) -> anyhow::Result<()> {
         println!("Load page for {}, user id: {}", page_url, chat_id);
-        // todo if an error happens what should be done?
-        let mut queue_lock = self.queue.lock().unwrap();
+        let already_in_progress = add_to_queue(&page_url, &chat_id, self.queue.clone());
 
-        let entry = queue_lock.entry(page_url.clone());
-        let already_in_progress = match entry {
-            Entry::Occupied(mut queue) => {
-                queue.get_mut().push_back(chat_id.clone());
-                true
-            }
-            Entry::Vacant(queue) => {
-                let mut deque: VecDeque<String> = VecDeque::new();
-                deque.push_back(chat_id.clone());
-                queue.insert(deque);
-                false
-            }
-        };
-        drop(queue_lock);
-
+        println!(
+            "Loading for page {} already in progress: {}",
+            page_url, already_in_progress
+        );
         if already_in_progress {
-            println!("Loading for page {} already in progress", page_url);
             return Ok(());
         }
 
@@ -67,31 +56,62 @@ impl QueuePageHandler {
             save_to_cache(file_id, &result, &self.cache, page_url.clone()).await;
         }
 
-        let mut queue_lock = self.queue.lock().unwrap();
-        let chat_id_queue = queue_lock.remove(&page_url).unwrap_or(VecDeque::new());
-        drop(queue_lock);
+        let chat_id_queue = get_chat_ids(&page_url, self.queue.clone());
 
-        let tg_result =
-            file_id.map_or_else({ || result.clone() }, { |id| PageResult::TelegramId(id) });
-        for chat_id_from_queue in chat_id_queue {
-            if chat_id_from_queue != chat_id {
-                println!("Sending page {} to {}", page_url, chat_id_from_queue);
-                let _ = self
-                    .page_uploader
-                    .send_page(&chat_id_from_queue, &tg_result)
-                    .await;
-            }
-        }
+        let tg_result = prepare_result(file_id, &result);
+        send_result(tg_result, &chat_id, chat_id_queue, &self.page_uploader).await;
 
         clear_data(result).await;
         Ok(())
     }
 }
 
-#[cfg(test)]
-mod test {
-    #[test]
-    fn test_text() {
-        assert_eq!(1, 1)
+fn add_to_queue(page_url: &str, chat_id: &str, queue: ChatQueue) -> bool {
+    // todo if an error happens what should be done?
+    let mut queue_lock = queue.lock().unwrap();
+
+    let entry = queue_lock.entry(page_url.to_string());
+    match entry {
+        Entry::Occupied(mut queue) => {
+            queue.get_mut().push_back(chat_id.to_string());
+            true
+        }
+        Entry::Vacant(queue) => {
+            let mut deque: VecDeque<String> = VecDeque::new();
+            deque.push_back(chat_id.to_string());
+            queue.insert(deque);
+            false
+        }
+    }
+}
+
+fn get_chat_ids(page_url: &str, queue: ChatQueue) -> VecDeque<String> {
+    queue
+        .lock()
+        .unwrap()
+        .remove(page_url)
+        .unwrap_or_else(|| VecDeque::new())
+}
+
+fn prepare_result(file_id: Option<String>, result: &PageResult) -> PageResult {
+    return file_id.map_or_else({ || result.clone() }, { |id| PageResult::TelegramId(id) });
+}
+
+async fn send_result(
+    tg_result: PageResult,
+    chat_id: &str,
+    chat_id_queue: VecDeque<String>,
+    page_uploader: &Box<dyn PageUploader>,
+) {
+    println!(
+        "Sending result to the rest of the queue, size: {}",
+        chat_id_queue.len()
+    );
+    for chat_id_from_queue in chat_id_queue {
+        if chat_id_from_queue != chat_id {
+            let _ = page_uploader
+                .send_page(&chat_id_from_queue, &tg_result)
+                .await;
+        }
     }
 }
