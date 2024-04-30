@@ -34,7 +34,7 @@ impl LoadPageHandler {
             .page_loader
             .submit_page_generation(PageData::from_url(page_url.clone()))
             .await?;
-        let file_id = self.page_uploader.send_page(chat_id, &result).await?;
+        let file_id = self.page_uploader.send_page(&chat_id, &result).await?;
         if let Some(file_id) = file_id {
             save_to_cache(&file_id, &result, &self.cache, page_url).await;
         }
@@ -43,7 +43,7 @@ impl LoadPageHandler {
     }
 }
 
-async fn save_to_cache(
+pub(crate) async fn save_to_cache(
     file_id: &str,
     result: &PageResult,
     cache: &Arc<dyn PagePersistent>,
@@ -63,7 +63,7 @@ async fn save_to_cache(
     }
 }
 
-async fn clear_data(result: PageResult) {
+pub(crate) async fn clear_data(result: PageResult) {
     if let PageResult::FilePath(path) = result {
         tokio::fs::remove_file(path).await.ok();
     }

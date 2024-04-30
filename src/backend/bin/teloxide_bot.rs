@@ -21,14 +21,15 @@ impl TeloxidePageUploader {
 impl PageUploader for TeloxidePageUploader {
     async fn send_page(
         &self,
-        chat_id: String,
+        chat_id: &str,
         page_result: &PageResult,
     ) -> anyhow::Result<Option<String>> {
+        println!("Sending page to {}", chat_id);
         let result = match to_input_file(page_result) {
             None => None,
             Some(input_file) => self
                 .bot
-                .send_document(chat_id, input_file)
+                .send_document(chat_id.to_string(), input_file)
                 .await?
                 .document()
                 .map(|document| document.file.id.to_string()),
