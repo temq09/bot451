@@ -1,8 +1,8 @@
 use std::path::PathBuf;
-use std::process::Command;
 
 use async_trait::async_trait;
 use nanoid::nanoid;
+use tokio::process::Command;
 
 use api::{PageData, PageResult, PageWorker};
 
@@ -32,7 +32,8 @@ impl PageWorker for ParallelPageWorker {
             .arg("--remove-saved-date")
             .arg(page_data.url)
             .arg(path_str)
-            .output()?;
+            .output()
+            .await?;
 
         if !output.status.success() {
             return Err(anyhow::Error::msg("Can't execute command"));

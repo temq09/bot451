@@ -277,6 +277,7 @@ dependencies = [
  "api",
  "async-trait",
  "nanoid",
+ "tokio",
 ]
 
 [[package]]
