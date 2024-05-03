@@ -11,7 +11,7 @@ pub(crate) struct RemotePageLoader {
 
 impl RemotePageLoader {
     pub(crate) fn new(backend_url: &str) -> anyhow::Result<Self> {
-        let mut url = Url::parse(backend_url)?;
+        let url = Url::parse(backend_url)?;
         Ok(RemotePageLoader {
             backend_url: url,
             client: Client::new(),

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use clap::Parser;
@@ -6,13 +7,14 @@ use dptree::case;
 use teloxide::dispatching::UpdateHandler;
 use teloxide::{prelude::*, utils::command::BotCommands};
 
-use api::PageWorker;
+// use api::PageWorker;
 use proto::command::Command;
 
 use crate::bot_args::{BotArgs, Mode};
 use crate::worker::page_loader::PageLoader;
 use crate::worker::remote_page_loader::RemotePageLoader;
 use crate::worker::standalone_page_loader::StandalonePageLoader;
+use crate::worker::throttled_page_loader::ThrottlePageLoader;
 
 mod bot_args;
 mod worker;
@@ -23,9 +25,11 @@ type HandlerResult = Result<(), Box<dyn std::error::Error + Send + Sync>>;
 async fn main() -> anyhow::Result<()> {
     let bot = Bot::from_env();
     let args = BotArgs::parse();
+    let duration = Duration::from_secs(args.throttling_timeout_seconds.clone());
     let worker = create_worker(args, bot.clone())?;
+    let throttle_worker = ThrottlePageLoader::new(duration, worker);
     Dispatcher::builder(bot, schema())
-        .dependencies(dptree::deps![worker])
+        .dependencies(dptree::deps![Arc::new(throttle_worker)])
         .build()
         .dispatch()
         .await;
@@ -55,7 +59,7 @@ async fn print_help(bot: Bot, message: Message) -> HandlerResult {
     return Ok(());
 }
 
-fn create_worker(args: BotArgs, bot: Bot) -> anyhow::Result<Arc<dyn PageLoader>> {
+fn create_worker(args: BotArgs, bot: Bot) -> anyhow::Result<Box<dyn PageLoader>> {
     match args.mode.unwrap_or(Mode::Standalone) {
         Mode::Standalone => {
             let singlefile_cli_path = args
@@ -65,7 +69,7 @@ fn create_worker(args: BotArgs, bot: Bot) -> anyhow::Result<Arc<dyn PageLoader>>
             let work_dir = args
                 .work_dir
                 .context("Working dir path must be set for standalone mode")?;
-            Ok(Arc::new(StandalonePageLoader::new(
+            Ok(Box::new(StandalonePageLoader::new(
                 singlefile_cli_path,
                 work_dir,
                 bot,
@@ -76,7 +80,7 @@ fn create_worker(args: BotArgs, bot: Bot) -> anyhow::Result<Arc<dyn PageLoader>>
                 .backend_url
                 .ok_or_else(|| anyhow!("Backend urls must be set for the distributed variant"))?;
             let loader = RemotePageLoader::new(backend_url.as_str())?;
-            Ok(Arc::new(loader))
+            Ok(Box::new(loader))
         }
     }
 }
