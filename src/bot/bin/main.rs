@@ -7,7 +7,6 @@ use dptree::case;
 use teloxide::dispatching::UpdateHandler;
 use teloxide::{prelude::*, utils::command::BotCommands};
 
-// use api::PageWorker;
 use proto::command::Command;
 
 use crate::bot_args::{BotArgs, Mode};
