@@ -12,4 +12,5 @@ doctest = false
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 nanoid = { workspace = true }
+tokio = { workspace = true }
 api = { path = "../api" }

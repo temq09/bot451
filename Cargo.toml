@@ -14,7 +14,6 @@ path = "src/backend/bin/main.rs"
 [workspace]
 members = [
     "crates/api",
-    "crates/bot_http_backend",
     "crates/botbackend",
     "crates/proto",
     "crates/rest_backend",
@@ -37,6 +36,7 @@ base64 = "0.22.0"
 nanoid = "0.4.0"
 clap = { version = "4.5.4", features = ["derive", "env"] }
 time = { version = "0.3.36" }
+thiserror = { version = "1.0.59" }
 
 [dependencies]
 tokio.workspace = true
@@ -45,8 +45,10 @@ anyhow.workspace = true
 dptree.workspace = true
 async-trait.workspace = true
 clap.workspace = true
+reqwest.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
 botbackend = { path = "crates/botbackend" }
-bot_http_backend = { path = "crates/bot_http_backend" }
 rest_backend = { path = "crates/rest_backend" }
 proto = { path = "crates/proto" }
 api = { path = "crates/api" }

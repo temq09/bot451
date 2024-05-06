@@ -3,19 +3,17 @@ use time::PrimitiveDateTime;
 
 pub struct PageData {
     pub url: String,
-    pub user_id: String,
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum PageResult {
     FilePath(String),
     TelegramId(String),
-    Noop,
 }
 
 impl PageData {
-    pub fn from_url(url: String, user_id: String) -> Self {
-        PageData { url, user_id }
+    pub fn from_url(url: String) -> Self {
+        PageData { url }
     }
 }
 
@@ -28,7 +26,7 @@ pub trait PageWorker: Sync + Send {
 pub trait PageUploader: Sync + Send {
     async fn send_page(
         &self,
-        chat_id: String,
+        chat_id: &str,
         page_result: &PageResult,
     ) -> anyhow::Result<Option<String>>;
 }

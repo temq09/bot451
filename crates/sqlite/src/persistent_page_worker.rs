@@ -1,6 +1,7 @@
+#[cfg(test)]
 use std::cell::Cell;
-use std::ops::Sub;
 use std::sync::Arc;
+#[cfg(not(test))]
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use async_trait::async_trait;
@@ -118,7 +119,7 @@ mod tests {
         let worker = PersistentPageWorker::new(Arc::new(persistent), page_worker);
 
         let result = worker
-            .submit_page_generation(PageData::from_url("url_1".to_string(), "id".to_string()))
+            .submit_page_generation(PageData::from_url("url_1".to_string()))
             .await?;
 
         assert_eq!(result, PageResult::TelegramId("id_1".to_string()));
@@ -146,7 +147,7 @@ mod tests {
         let worker = PersistentPageWorker::new(Arc::new(persistent), page_worker);
 
         let result = worker
-            .submit_page_generation(PageData::from_url("url_1".to_string(), "id".to_string()))
+            .submit_page_generation(PageData::from_url("url_1".to_string()))
             .await?;
 
         assert_eq!(result, PageResult::TelegramId("telegram_id".to_string()));
@@ -175,7 +176,7 @@ mod tests {
         CURRENT_TIMESTAMP.set(Some(1704190510));
 
         let result = worker
-            .submit_page_generation(PageData::from_url("url_1".to_string(), "id".to_string()))
+            .submit_page_generation(PageData::from_url("url_1".to_string()))
             .await?;
 
         assert_eq!(result, PageResult::TelegramId("telegram_id".to_string()));
@@ -204,7 +205,7 @@ mod tests {
         CURRENT_TIMESTAMP.set(Some(1704276910));
 
         let result = worker
-            .submit_page_generation(PageData::from_url("url_1".to_string(), "id".to_string()))
+            .submit_page_generation(PageData::from_url("url_1".to_string()))
             .await?;
 
         assert_eq!(result, PageResult::FilePath("/some/path".to_string()));
@@ -279,7 +280,7 @@ mod test_impl {
 
     #[async_trait]
     impl PagePersistent for MockPagePersistent {
-        async fn save(&self, page_info: &PageInfo) -> anyhow::Result<()> {
+        async fn save(&self, _page_info: &PageInfo) -> anyhow::Result<()> {
             bail!("Not supported")
         }
 

@@ -1,18 +1,22 @@
 use std::path::PathBuf;
-use std::process::Command;
 
 use async_trait::async_trait;
 use nanoid::nanoid;
+use tokio::process::Command;
 
 use api::{PageData, PageResult, PageWorker};
 
 pub struct ParallelPageWorker {
-    pub(crate) working_dir: String,
+    working_dir: String,
+    singlefile_cli_path: String,
 }
 
 impl ParallelPageWorker {
-    pub fn new(working_dir: String) -> Self {
-        ParallelPageWorker { working_dir }
+    pub fn new(working_dir: String, singlefile_cli_path: String) -> Self {
+        ParallelPageWorker {
+            working_dir,
+            singlefile_cli_path,
+        }
     }
 }
 
@@ -24,11 +28,12 @@ impl PageWorker for ParallelPageWorker {
         file_path.set_extension("html");
         let path_str = file_path.to_str().unwrap().to_owned();
         let result = PageResult::FilePath(path_str.to_owned());
-        let output = Command::new("/Users/artemushakov/prog/tmp/singlefile/singlefile")
+        let output = Command::new(&self.singlefile_cli_path)
             .arg("--remove-saved-date")
             .arg(page_data.url)
             .arg(path_str)
-            .output()?;
+            .output()
+            .await?;
 
         if !output.status.success() {
             return Err(anyhow::Error::msg("Can't execute command"));

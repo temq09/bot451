@@ -9,7 +9,7 @@ pub(crate) struct BackendArgs {
 
     /// Working directory where all pages will be downloaded initially
     #[arg(long, value_name = "PATH")]
-    pub(crate) work_dir: Option<String>,
+    pub(crate) work_dir: String,
 
     /// PostgresSQL user name
     #[arg(long, value_name = "USERNAME")]

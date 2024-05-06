@@ -36,6 +36,15 @@ const INSERT_QUERY: &str = r#"
 
 async fn create_table_if_exist(connection: &Pool<Sqlite>) -> anyhow::Result<()> {
     sqlx::query(CREATE_TABLE_QUERY).execute(connection).await?;
+    // index for the field that used for all get requests
+    sqlx::query(
+        r#"
+        CREATE INDEX IF NOT EXISTS idx_page_url
+        ON telegram_documents(page_url)
+        "#,
+    )
+    .execute(connection)
+    .await?;
     Ok(())
 }
 
@@ -63,6 +72,8 @@ impl PagePersistent for SqlitePagePersistent {
             r#"
             SELECT * FROM telegram_documents
             WHERE page_url = $1
+            ORDER BY timestamp DESC
+            LIMIT 1
             "#,
         )
         .bind(page_url)
@@ -114,5 +125,36 @@ mod test {
         assert_eq!(Some(page_info), result);
 
         return Ok(());
+    }
+
+    #[sqlx::test]
+    async fn test_select_page_info_order() -> anyhow::Result<()> {
+        let db = init_db("sqlite::memory:".to_string()).await?;
+        let page_info_first = create_page_info(PrimitiveDateTime::new(
+            Date::from_calendar_date(2024, Month::January, 02)?,
+            Time::from_hms(10, 10, 10)?,
+        ));
+        db.save(&page_info_first).await?;
+
+        let page_info_second = create_page_info(PrimitiveDateTime::new(
+            Date::from_calendar_date(2024, Month::January, 02)?,
+            Time::from_hms(10, 10, 11)?,
+        ));
+        db.save(&page_info_second).await?;
+
+        let result = db.get("url").await?;
+
+        assert_eq!(Some(page_info_second), result);
+
+        return Ok(());
+    }
+
+    pub(crate) fn create_page_info(date: PrimitiveDateTime) -> PageInfo {
+        PageInfo {
+            telegram_file_id: "telegram_file_id".to_string(),
+            file_hash: "file_hash".to_string(),
+            page_url: "url".to_string(),
+            timestamp_ms: date,
+        }
     }
 }
