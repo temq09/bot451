@@ -1,6 +1,7 @@
+#[cfg(test)]
 use std::cell::Cell;
-use std::ops::Sub;
 use std::sync::Arc;
+#[cfg(not(test))]
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use async_trait::async_trait;
@@ -279,7 +280,7 @@ mod test_impl {
 
     #[async_trait]
     impl PagePersistent for MockPagePersistent {
-        async fn save(&self, page_info: &PageInfo) -> anyhow::Result<()> {
+        async fn save(&self, _page_info: &PageInfo) -> anyhow::Result<()> {
             bail!("Not supported")
         }
 

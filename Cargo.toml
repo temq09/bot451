@@ -36,6 +36,7 @@ base64 = "0.22.0"
 nanoid = "0.4.0"
 clap = { version = "4.5.4", features = ["derive", "env"] }
 time = { version = "0.3.36" }
+thiserror = { version = "1.0.59" }
 
 [dependencies]
 tokio.workspace = true
@@ -46,6 +47,7 @@ async-trait.workspace = true
 clap.workspace = true
 reqwest.workspace = true
 serde_json.workspace = true
+thiserror.workspace = true
 botbackend = { path = "crates/botbackend" }
 rest_backend = { path = "crates/rest_backend" }
 proto = { path = "crates/proto" }

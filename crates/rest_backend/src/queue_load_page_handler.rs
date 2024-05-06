@@ -94,7 +94,7 @@ fn get_chat_ids(page_url: &str, queue: ChatQueue) -> VecDeque<String> {
 }
 
 fn prepare_result(file_id: Option<String>, result: &PageResult) -> PageResult {
-    return file_id.map_or_else({ || result.clone() }, { |id| PageResult::TelegramId(id) });
+    return file_id.map_or_else(|| result.clone(), |id| PageResult::TelegramId(id));
 }
 
 async fn send_result(

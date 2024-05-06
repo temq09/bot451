@@ -18,6 +18,10 @@ pub(crate) struct BotArgs {
     /// Path to a work dir where pages will be downloaded to. Must be set for Standalone mode
     #[arg(long, value_name = "PATH")]
     pub(crate) work_dir: Option<String>,
+
+    /// Throttling timeout for load page request coming from the same user
+    #[arg(long, value_name = "SECONDS", default_value_t = 10)]
+    pub(crate) throttling_timeout_seconds: u64,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
