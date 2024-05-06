@@ -4,6 +4,7 @@ use std::time::{Duration, SystemTime};
 
 use async_trait::async_trait;
 
+use crate::bot_error::BotError;
 use crate::worker::page_loader::PageLoader;
 
 pub(crate) struct ThrottlePageLoader {
@@ -70,16 +71,17 @@ impl ThrottlePageLoader {
 
 #[async_trait]
 impl PageLoader for ThrottlePageLoader {
-    async fn load_page(&self, url: String, chat_id: String) {
+    async fn load_page(&self, url: String, chat_id: String) -> Result<(), BotError> {
         if can_request(
             &self.shared.state,
             &chat_id,
             self.timeout,
             current_time_sec(),
         ) {
-            self.worker.load_page(url, chat_id).await;
+            self.worker.load_page(url, chat_id).await
         } else {
-            println!("Throttle request for {}", chat_id)
+            println!("Throttle request for {}", chat_id);
+            Err(BotError::ThrottleError)
         }
     }
 }
@@ -126,6 +128,7 @@ mod tests {
 
     use async_trait::async_trait;
 
+    use crate::bot_error::BotError;
     use crate::worker::page_loader::PageLoader;
     use crate::worker::throttled_page_loader::{can_request, Shared, State, ThrottlePageLoader};
 
@@ -173,7 +176,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_throttled_page_loader() {
+    async fn test_throttled_page_loader() -> Result<(), BotError> {
         let requests = Arc::new(Mutex::new(HashMap::new()));
         let test_loader = Box::new(TestPageLoader {
             load_page_requests: requests.clone(),
@@ -190,12 +193,14 @@ mod tests {
 
         throttled_loader
             .load_page("url_1".to_string(), "chat_1".to_string())
-            .await;
+            .await?;
 
         assert_eq!(
             requests.lock().unwrap().get("url_1"),
             Some(&"chat_1".to_string())
         );
+
+        Ok(())
     }
 
     struct TestPageLoader {
@@ -204,8 +209,9 @@ mod tests {
 
     #[async_trait]
     impl PageLoader for TestPageLoader {
-        async fn load_page(&self, url: String, chat_id: String) {
+        async fn load_page(&self, url: String, chat_id: String) -> Result<(), BotError> {
             self.load_page_requests.lock().unwrap().insert(url, chat_id);
+            Ok(())
         }
     }
 }
