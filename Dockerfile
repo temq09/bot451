@@ -25,8 +25,8 @@ RUN \
        ca-certificates \
        curl && \
      curl -fsSL https://deno.land/install.sh | sh && \
-     curl -o single-file https://github.com/gildas-lormeau/single-file-cli/releases/download/v2.0.33/single-file-x86_64-linux && \
-     chmod +x single-file && \
+     curl -o /single-file https://github.com/gildas-lormeau/single-file-cli/releases/download/v2.0.33/single-file-x86_64-linux && \
+     chmod +x /single-file && \
      echo "**** cleanup ****" && \
      apt-get autoclean && \
      rm -rf \
@@ -36,4 +36,5 @@ RUN \
        /tmp/*
 WORKDIR /app
 COPY --from=builder /app/target/release/bot /usr/local/bin
+ENV SINGLEFILE_CLI=/single-file
 ENTRYPOINT ["/usr/local/bin/bot"]
