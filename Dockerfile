@@ -19,13 +19,14 @@ RUN \
      echo "**** install packages ****" && \
      apt-get update && \
      apt-get install -y --no-install-recommends \
+       libssl-dev \
        chromium \
        chromium-l10n \
        unzip \
        ca-certificates \
        curl && \
      curl -fsSL https://deno.land/install.sh | sh && \
-     curl -o /single-file https://github.com/gildas-lormeau/single-file-cli/releases/download/v2.0.33/single-file-x86_64-linux && \
+     curl -L -o /single-file https://github.com/gildas-lormeau/single-file-cli/releases/download/v2.0.36/single-file-x86_64-linux && \
      chmod +x /single-file && \
      echo "**** cleanup ****" && \
      apt-get autoclean && \
@@ -36,5 +37,6 @@ RUN \
        /tmp/*
 WORKDIR /app
 COPY --from=builder /app/target/release/bot /usr/local/bin
+ENV ENV_MODE=standalone
 ENV SINGLEFILE_CLI=/single-file
-ENTRYPOINT ["/usr/local/bin/bot"]
+ENTRYPOINT /usr/local/bin/bot --work-dir /workdir --mode $ENV_MODE
