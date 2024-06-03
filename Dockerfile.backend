@@ -37,5 +37,7 @@ RUN \
        /tmp/*
 WORKDIR /app
 COPY --from=builder /app/target/release/backend /usr/local/bin
+COPY --from=builder /app/entrypoint-backend.sh /
+RUN chmod +x /entrypoint-backend.sh
 ENV SINGLEFILE_CLI=/single-file
-ENTRYPOINT /usr/local/bin/backend --work-dir /workdir --mode $ENV_MODE
+ENTRYPOINT ["/entrypoint-backend.sh"]
