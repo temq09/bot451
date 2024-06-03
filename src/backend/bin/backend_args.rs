@@ -5,7 +5,7 @@ use clap::Parser;
 pub(crate) struct BackendArgs {
     /// Postgres SQL url, if not set Sqlite DB will be used
     #[arg(long, value_name = "URL")]
-    pub(crate) postgres_url: Option<String>,
+    pub(crate) pg_url: Option<String>,
 
     /// Working directory where all pages will be downloaded initially
     #[arg(long, value_name = "PATH")]
