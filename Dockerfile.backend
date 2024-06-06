@@ -1,0 +1,43 @@
+FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
+WORKDIR /app
+
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --recipe-path recipe.json
+# Build application
+COPY . .
+RUN cargo build --release --bin backend
+
+# We do not need the Rust toolchain to run the binary!
+FROM debian:bookworm-slim AS runtime
+RUN \
+     echo "**** install packages ****" && \
+     apt-get update && \
+     apt-get install -y --no-install-recommends \
+       libssl-dev \
+       chromium \
+       chromium-l10n \
+       unzip \
+       ca-certificates \
+       curl && \
+     curl -fsSL https://deno.land/install.sh | sh && \
+     curl -L -o /single-file https://github.com/gildas-lormeau/single-file-cli/releases/download/v2.0.36/single-file-x86_64-linux && \
+     chmod +x /single-file && \
+     echo "**** cleanup ****" && \
+     apt-get autoclean && \
+     rm -rf \
+       /config/.cache \
+       /var/lib/apt/lists/* \
+       /var/tmp/* \
+       /tmp/*
+WORKDIR /app
+COPY --from=builder /app/target/release/backend /usr/local/bin
+COPY --from=builder /app/entrypoint-backend.sh /
+RUN chmod +x /entrypoint-backend.sh
+ENV SINGLEFILE_CLI=/single-file
+ENTRYPOINT ["/entrypoint-backend.sh"]

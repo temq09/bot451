@@ -48,7 +48,7 @@ fn create_uploader() -> impl PageUploader {
 }
 
 async fn create_persistent(args: &BackendArgs) -> anyhow::Result<Arc<dyn PagePersistent>> {
-    if let Some(url) = args.postgres_url.as_ref() {
+    if let Some(url) = args.pg_url.as_ref() {
         create_postgres(url, args).await
     } else {
         create_sqlite(args).await
