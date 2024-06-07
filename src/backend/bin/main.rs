@@ -1,6 +1,7 @@
+use std::path::Path;
 use std::sync::Arc;
 
-use anyhow::Context;
+use anyhow::{bail, Context};
 use clap::Parser;
 
 use api::{PagePersistent, PageUploader, PageWorker};
@@ -77,7 +78,24 @@ async fn create_postgres(
 }
 
 async fn create_sqlite(args: &BackendArgs) -> anyhow::Result<Arc<dyn PagePersistent>> {
-    let work_dir = args.work_dir.as_str();
+    let work_dir = get_sqlite_db_path(args.work_dir.as_str()).await?;
     let persistent = init_db(work_dir.to_string()).await?;
     Ok(Arc::new(persistent))
+}
+
+async fn get_sqlite_db_path(work_dir: &str) -> anyhow::Result<String> {
+    let work_dir_path = Path::new(work_dir);
+    if !work_dir_path.exists() {
+        tokio::fs::create_dir_all(work_dir_path).await?;
+    }
+    if !work_dir_path.is_dir() {
+        bail!("Work dir {} is not a folder", work_dir)
+    }
+
+    let mut dir = String::from(work_dir);
+    dir.push_str("/bot_db.db");
+
+    tokio::fs::File::create(dir.clone()).await?;
+
+    Ok(dir)
 }
