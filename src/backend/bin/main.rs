@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::sync::Arc;
 
-use anyhow::{bail, Context};
+use anyhow::{anyhow, bail, Context};
 use clap::Parser;
 
 use api::{PagePersistent, PageUploader, PageWorker};
@@ -78,24 +78,58 @@ async fn create_postgres(
 }
 
 async fn create_sqlite(args: &BackendArgs) -> anyhow::Result<Arc<dyn PagePersistent>> {
-    let work_dir = get_sqlite_db_path(args.work_dir.as_str()).await?;
+    let work_dir = create_file_if_needed(args.work_dir.as_ref(), "/bot_db.db").await?;
     let persistent = init_db(work_dir.to_string()).await?;
     Ok(Arc::new(persistent))
 }
 
-async fn get_sqlite_db_path(work_dir: &str) -> anyhow::Result<String> {
-    let work_dir_path = Path::new(work_dir);
-    if !work_dir_path.exists() {
-        tokio::fs::create_dir_all(work_dir_path).await?;
+/// Check if file with the file name exist in the given folder.
+/// Returns fill path to the file
+async fn create_file_if_needed(work_dir: &Path, file_name: &str) -> anyhow::Result<String> {
+    if !work_dir.exists() {
+        tokio::fs::create_dir_all(work_dir).await?;
     }
-    if !work_dir_path.is_dir() {
-        bail!("Work dir {} is not a folder", work_dir)
+    if !work_dir.is_dir() {
+        bail!("Work dir {} is not a folder", work_dir.display())
     }
 
-    let mut dir = String::from(work_dir);
-    dir.push_str("/bot_db.db");
+    let file_path = work_dir.join(file_name);
+    let path = file_path
+        .to_str()
+        .ok_or(anyhow!("Can't convert path to str"))?;
 
-    tokio::fs::File::create(dir.clone()).await?;
+    if !file_path.exists() {
+        tokio::fs::File::create(file_path.clone()).await?;
+    }
 
-    Ok(dir)
+    Ok(String::from(path))
+}
+
+#[cfg(test)]
+mod test {
+    use std::env::temp_dir;
+    use std::path::Path;
+
+    use crate::create_file_if_needed;
+
+    #[tokio::test]
+    async fn test_create_file() -> anyhow::Result<()> {
+        let temp_dir = temp_dir();
+        let file_name = "test.db";
+
+        let full_path = create_file_if_needed(temp_dir.as_ref(), file_name).await?;
+        let actual_path = Path::new(&full_path);
+
+        assert_eq!(temp_dir.join(file_name), actual_path);
+        assert!(actual_path.is_file());
+        assert!(actual_path.exists());
+
+        tokio::fs::write(actual_path, "test_data").await?;
+        let full_path = create_file_if_needed(temp_dir.as_ref(), file_name).await?;
+        let actual_path = Path::new(&full_path);
+        let content = tokio::fs::read(actual_path).await?;
+        assert_eq!(content, "test_data".as_bytes());
+
+        Ok(())
+    }
 }
