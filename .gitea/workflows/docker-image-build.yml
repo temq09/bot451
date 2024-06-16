@@ -46,6 +46,6 @@ jobs:
           push: true
           provenance: mode=max
           tags: ${{ steps.meta.outputs.tags }}
-          dockerfile: Dockerfile.${{ matrix.variant }}
+          file: Dockerfile.${{ matrix.variant }}
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.WORKFLOW_TOKEN }}
