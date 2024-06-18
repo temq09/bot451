@@ -1,12 +1,8 @@
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 
 #[derive(Parser)]
 #[command(about, long_about = None)]
 pub(crate) struct BotArgs {
-    /// Mode for the bot to run.
-    #[arg(long, value_enum, value_name = "MODE")]
-    pub(crate) mode: Option<Mode>,
-
     /// Backend url the bot will interact with
     #[arg(long, value_name = "URL")]
     pub(crate) backend_url: Option<String>,
@@ -22,14 +18,4 @@ pub(crate) struct BotArgs {
     /// Throttling timeout for load page request coming from the same user
     #[arg(long, value_name = "SECONDS", default_value_t = 10)]
     pub(crate) throttling_timeout_seconds: u64,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-pub(crate) enum Mode {
-    /// Everything will work out of the box, no extra settings required.
-    /// Use it for simple installations
-    Standalone,
-    /// Thin bot mode that requires the separate backend for the tasks to be executed.
-    /// Use it to scale the backend workload
-    Distributed,
 }
