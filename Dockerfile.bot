@@ -37,6 +37,5 @@ RUN \
        /tmp/*
 WORKDIR /app
 COPY --from=builder /app/target/release/bot /usr/local/bin
-ENV ENV_MODE=standalone
 ENV SINGLEFILE_CLI=/single-file
-ENTRYPOINT /usr/local/bin/bot --work-dir /workdir --mode $ENV_MODE
+ENTRYPOINT /usr/local/bin/bot --work-dir /workdir
