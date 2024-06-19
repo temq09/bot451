@@ -40,4 +40,5 @@ COPY --from=builder /app/target/release/backend /usr/local/bin
 COPY --from=builder /app/entrypoint-backend.sh /
 RUN chmod +x /entrypoint-backend.sh
 ENV SINGLEFILE_CLI=/single-file
+EXPOSE 8080
 ENTRYPOINT ["/entrypoint-backend.sh"]
