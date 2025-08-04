@@ -1,5 +1,8 @@
 This is a telegram bot to download web pages via telegram bot to bypass pages blocked with 451 error code.
 
+Note: the architecture might look too complicated for this small project, but it was done on purpose to lern on how to split components to make it scalable. 
+
+
 ## Overview
 The bot consists of two part: the actual bot that handles telegram commands and the REST backend that is responsible for downloading the page and sending it back to the user.
 The bot part can be ran in the standalone mode so it does not require the backend to handle requests.
@@ -38,7 +41,7 @@ Example to run in the distributed mode
 For the simplicity there is a docker image with all dependencies preinstalled.
 
 ```bash
-docker build -t bot Dockerfile.bot 
+docker build -f Dockerfile.bot -t bot .
 docker container run bot <params>
 ```
 
@@ -61,7 +64,7 @@ It also reuqires singlefile binary which comes preinstalled with the docker imag
 - singlefile_cli - path to the singlefile binary
 
 ```bash
-docker build -t backend Dockerfile.beckend
+docker build -f Dockerfile.backend -t backend .
 docker container run backend <params>
 ```
 
