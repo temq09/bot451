@@ -26,7 +26,7 @@ RUN \
        ca-certificates \
        curl && \
      curl -fsSL https://deno.land/install.sh | sh && \
-     curl -L -o /single-file https://github.com/gildas-lormeau/single-file-cli/releases/download/v2.0.36/single-file-x86_64-linux && \
+     curl -L -o /single-file https://github.com/gildas-lormeau/single-file-cli/releases/download/v2.0.75/single-file-x86_64-linux && \
      chmod +x /single-file && \
      echo "**** cleanup ****" && \
      apt-get autoclean && \

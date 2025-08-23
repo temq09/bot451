@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use teloxide::prelude::Requester;
-use teloxide::types::InputFile;
+use teloxide::types::{FileId, InputFile};
 use teloxide::Bot;
 
 use api::{PageResult, PageUploader};
@@ -25,22 +25,20 @@ impl PageUploader for TeloxidePageUploader {
         page_result: &PageResult,
     ) -> anyhow::Result<Option<String>> {
         println!("Sending page to {}", chat_id);
-        let result = match to_input_file(page_result) {
-            None => None,
-            Some(input_file) => self
-                .bot
-                .send_document(chat_id.to_string(), input_file)
-                .await?
-                .document()
-                .map(|document| document.file.id.to_string()),
-        };
+        let input_file = to_input_file(page_result);
+        let result = self
+            .bot
+            .send_document(chat_id.to_string(), input_file)
+            .await?
+            .document()
+            .map(|document| document.file.id.to_string());
         return Ok(result);
     }
 }
 
-fn to_input_file(page_result: &PageResult) -> Option<InputFile> {
+fn to_input_file(page_result: &PageResult) -> InputFile {
     match page_result {
-        PageResult::FilePath(path) => Some(InputFile::file(path)),
-        PageResult::TelegramId(id) => Some(InputFile::file_id(id)),
+        PageResult::FilePath(path) => InputFile::file(path),
+        PageResult::TelegramId(id) => InputFile::file_id(FileId::from(id.to_string())),
     }
 }
