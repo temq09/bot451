@@ -28,7 +28,7 @@ Supported parameters:
 
 To start the bot in the standalone mode:
 ```bash
-./bot --singlefile_cli=<path_to_binary> --work_dir=<path>
+./bot --work_dir=<path> <path_to_binary>
 ```
 
 To start the bot in the distributed mode:
