@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 use teloxide::prelude::Requester;
-use teloxide::types::InputFile;
+use teloxide::types::{FileId, InputFile};
 use teloxide::Bot;
 
 use api::{PageData, PageResult, PageWorker};
@@ -41,6 +41,6 @@ async fn send_document(chat_id: String, bot: &Bot, result: PageResult) -> Result
 fn result_to_input_file(result: PageResult) -> InputFile {
     match result {
         PageResult::FilePath(path) => InputFile::file(PathBuf::from(path)),
-        PageResult::TelegramId(id) => InputFile::file_id(id),
+        PageResult::TelegramId(id) => InputFile::file_id(FileId::from(id)),
     }
 }
