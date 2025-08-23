@@ -20,11 +20,13 @@ There is a docker image that provides all dependencies, but it can also be run f
 
 When running in the standalone mode it's required to provide a path to [singilefile](https://github.com/gildas-lormeau/SingleFile) binary.
 
-Supported parameters:
-- `backend_url` - the url for the backend to serve the requests, required for the distributed mode
-- `singlefile_cli` - path to the singlefile binary, required for standalone mode
-- `work_dir` - path to the folder needed to save the pages, required for the standalone mode
-- `throttling_timeout_seconds` - throttling interval for requests from the same client
+Supported options:
+- `backend-url` - the url for the backend to serve the requests, required for the distributed mode
+- `work-dir` - path to the folder needed to save the pages, required for the standalone mode
+- `throttling-timeout-seconds` - throttling interval for requests from the same client
+
+Supported arguments:
+- `SINGLEFILE-CLI` - path to the singlefile binary, required for standalone mode
 
 To start the bot in the standalone mode:
 ```bash
@@ -34,6 +36,11 @@ To start the bot in the standalone mode:
 To start the bot in the distributed mode:
 ```bash
 ./bot --backend_url=example.com
+```
+
+To print help
+```bash
+./bot --help
 ```
 
 ### Dockerimage
