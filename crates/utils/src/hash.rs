@@ -1,7 +1,8 @@
-use std::io::Read;
+use std::io::{self, Read};
 
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
+use digest_io::IoWrapper;
 use sha2::{Digest, Sha256};
 
 pub fn make_hash_for_file(path: &str) -> Option<String> {
@@ -15,9 +16,9 @@ fn get_hash<R>(source: &mut R) -> anyhow::Result<String>
 where
     R: Read,
 {
-    let mut sha256 = Sha256::new();
-    std::io::copy(source, &mut sha256)?;
-    let hash = sha256.finalize();
+    let mut sha256 = IoWrapper(Sha256::new());
+    io::copy(source, &mut sha256)?;
+    let hash = sha256.0.finalize();
     Ok(BASE64_STANDARD.encode(hash))
 }
 

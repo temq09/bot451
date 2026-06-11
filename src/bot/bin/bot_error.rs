@@ -18,7 +18,7 @@ impl From<reqwest::Error> for BotError {
 
 impl From<anyhow::Error> for BotError {
     fn from(err: anyhow::Error) -> Self {
-        BotError::GenericError(err.into())
+        BotError::GenericError(err)
     }
 }
 
